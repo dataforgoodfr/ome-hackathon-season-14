@@ -46,9 +46,9 @@ services:
     networks:
       - metanet1
   metabase:
-    # image: metabase/metabase:latest
-    # If on mac use this image instead
-    image: stephaneturquay/metabase-arm64:latest
+    image: metabase/metabase:latest
+    # If on Apple Silicon use this image instead
+    # image: stephaneturquay/metabase-arm64:latest
     volumes:
       - './mb-data:/metabase-data'  # Volumes where Metabase data will be persisted
     ports:
