@@ -1,7 +1,11 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [project]
-name = "ome-hackathon-season-14"
+name = "reporto"
 version = "0.1.0"
-description = "Add your description here"
+description = "Hackathon OMÉ x Data For Good on TV Report Classification"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -33,6 +37,7 @@ dependencies = [
   "scikit-learn==1.8.0",
   # Visualization
   "streamlit>=1.53.1",
+  "pydantic-settings>=2.12.0",
 ]
 
 [dependency-groups]
@@ -155,7 +160,7 @@ unfixable = [
 [tool.ruff.lint.isort]
 combine-as-imports = true
 required-imports = ["from __future__ import annotations"]
-known-first-party = []
+known-first-party = ["reporto"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

@@ -90,12 +90,6 @@ repos:
         entry: uv run mypy
         types_or: [python, pyi]
         require_serial: true
-      - id: export-requirements
-        name: export-requirements
-        language: system
-        entry: make export-requirements
-        files: "^(pyproject.toml|requirements.txt)$"
-        pass_filenames: false
   # Check Docker & shell scripts
   - repo: https://github.com/hadolint/hadolint
     rev: v2.13.1-beta

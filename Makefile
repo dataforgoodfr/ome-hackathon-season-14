@@ -99,11 +99,6 @@ update-dependencies update-deps:
 update-precommit:
 	$(RUN) pre-commit autoupdate -j 10
 
-## export-requirements: Export requirements.txt from uv configuration
-.PHONY: export-requirements
-export-requirements:
-	@uv export --quiet --format requirements.txt --no-hashes --no-annotate > requirements.txt
-
 ## run: Run the app locally
 .PHONY: run
 run:
@@ -149,10 +144,10 @@ check-versions-coherence:
 #			Build & Publish
 # ----------------------------------------------------------------------
 
-# ## build-package: Build the Python package
-# .PHONY: build-package
-# build-package:
-# 	uv build --all-packages
+## build-package: Build the Python package
+.PHONY: build-package
+build-package:
+	uv build --all-packages
 
 # ## publish-package: Publish the Python package
 # .PHONY: publish-package
@@ -160,17 +155,17 @@ check-versions-coherence:
 # 	uv publish
 
 
-# ## build-docker: Build the docker image
-# .PHONY: build-docker
-# build-docker:
-# 	docker build . \
-# 		--pull \
-# 		--file Dockerfile \
-# 		--tag "${DOCKER_IMAGE}:${DOCKER_TAG}" \
-# 		--build-arg "APP_NAME=${APP_NAME}" \
-# 		--build-arg "APP_VERSION=${APP_VERSION}" \
-# 		--build-arg "COMMIT_HASH=${COMMIT_HASH}" \
-# 		--build-arg "PYTHON_VERSION=$(PYTHON_VERSION)"
+## build-docker: Build the docker image
+.PHONY: build-docker
+build-docker:
+	docker build . \
+		--pull \
+		--file Dockerfile \
+		--tag "${DOCKER_IMAGE}:${DOCKER_TAG}" \
+		--build-arg "APP_NAME=${APP_NAME}" \
+		--build-arg "APP_VERSION=${APP_VERSION}" \
+		--build-arg "COMMIT_HASH=${COMMIT_HASH}" \
+		--build-arg "PYTHON_VERSION=$(PYTHON_VERSION)"
 
 # ## publish-docker: Push the docker image
 # .PHONY: publish-docker

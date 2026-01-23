@@ -1,51 +1,30 @@
 from __future__ import annotations
 
 import logging
-import os
-import secrets
 from collections.abc import Callable, Mapping
-from typing import TYPE_CHECKING, Any, Literal, cast
+from typing import TYPE_CHECKING, Any, cast
 
-import cyclopts
 import pandas as pd
-from datasets import Dataset, load_dataset
-from setfit import SetFitModel
 from sklearn.metrics import classification_report
-from sqlalchemy.orm import sessionmaker
 
-from inference.models import (
+from reporto.db import (
     CategoryClassifications,
     ClassificationMetrics,
     connect_to_db,
     create_hash_id,
     create_tables,
+    get_db_session,
     upsert_data_optimized,
 )
+from reporto.labels import LABELS, Label, get_numerical_labels
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from datasets import Dataset
 
-from common.logs import configure_logging
-
-configure_logging("inference", "common", "models")
 
 _logger = logging.getLogger(__name__)
 
 
-Label = Literal["mobility_transport", "agriculture_alimentation", "energy", "other"]
-LABEL_TO_NUM = {
-    "mobility_transport": 0,
-    "agriculture_alimentation": 1,
-    "energy": 2,
-    "other": 3,
-}
-
-
-def get_numerical_labels(labels: Iterable[Label]) -> list[int]:
-    return list(map(LABEL_TO_NUM.__getitem__, labels))
-
-
-# Classification
 def run_batched_inference(
     dataset: Dataset,
     predict: Callable[[list[str]], list[Label]],
@@ -92,7 +71,7 @@ def evaluate_results(
         results_df["llm_category"],
         results_df["predicted_category"],
         output_dict=True,
-        labels=list(LABEL_TO_NUM.keys()),
+        labels=LABELS,
     )
     run_results = {
         "run_id": [run_id],
@@ -115,25 +94,18 @@ def save_results_to_db(
     results_df: pd.DataFrame,
     run_df: pd.DataFrame,
 ) -> None:
-    conn_kwargs = {
-        "user": os.getenv("POSTGRES_USER", "user"),
-        "host": os.getenv("POSTGRES_HOST", "localhost"),
-        "database": os.getenv("POSTGRES_DB", "barometre"),
-        "port": int(os.getenv("POSTGRES_PORT", "5432")),
-        "password": os.getenv("POSTGRES_PASSWORD", "password"),
-    }
-    target_connection = connect_to_db(**conn_kwargs)
-    target_session = sessionmaker(bind=target_connection)()
-    create_tables(target_connection)
+    engine = connect_to_db()
+    session = get_db_session(engine)
+    create_tables(engine)
     try:
         upsert_data_optimized(
-            session=target_session,
+            session=session,
             df=results_df,
             table_class=CategoryClassifications,
             primary_key="id",
         )
         upsert_data_optimized(
-            session=target_session,
+            session=session,
             df=run_df,
             table_class=ClassificationMetrics,
             primary_key="run_id",
@@ -144,32 +116,4 @@ def save_results_to_db(
         _logger.exception("Error during data upsert: %r", error)  # noqa: TRY401
         raise
     finally:
-        target_session.close()
-
-
-def main(
-    model_name: str = "setfit-ome",
-    *,
-    split: Literal["train", "test", "validation"] = "test",
-    run_id: str | None = None,
-    batch_size: int = 8,
-    save_to_db: bool = False,
-) -> None:
-    if run_id is None:
-        run_id = secrets.token_hex(8)
-
-    dataset = load_dataset("DataForGood/ome-hackathon-season-14", split=split)
-    model = SetFitModel.from_pretrained(f"models/{model_name}")
-
-    results_df = run_batched_inference(
-        dataset,
-        model.predict,
-        batch_size=batch_size,
-    )
-    run_df = evaluate_results(results_df, run_id=run_id, model_name=model_name)
-    if save_to_db:
-        save_results_to_db(results_df, run_df)
-
-
-if __name__ == "__main__":
-    cyclopts.run(main)
+        session.close()
