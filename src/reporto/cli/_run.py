@@ -3,11 +3,9 @@ from __future__ import annotations
 import secrets
 from typing import Literal
 
-import cyclopts
 from datasets import load_dataset
 from setfit import SetFitModel, Trainer, TrainingArguments, sample_dataset
 
-from reporto import __version__
 from reporto.evaluation import (
     evaluate_results,
     run_batched_inference,
@@ -15,14 +13,9 @@ from reporto.evaluation import (
 )
 from reporto.labels import LABELS
 
-cli = cyclopts.App(
-    name="reporto",
-    help="Hackathon OMÉ x Data For Good on TV Report Classification",
-    version=__version__,
-)
+# TODO: Group
 
 
-@cli.command
 def train(
     output_name: str,
     base_model: str = "dangvantuan/sentence-camembert-base",
@@ -32,6 +25,7 @@ def train(
     num_epochs: int = 1,
     test_size: int = 100,
 ) -> None:
+    """Train a SetFit model on the dataset."""
     # Initializing a new SetFit model
     model = SetFitModel.from_pretrained(base_model, labels=LABELS)
 
@@ -68,7 +62,6 @@ def train(
     print(f"Model saved to models/{output_name}")
 
 
-@cli.command
 def predict(
     model_name: str = "setfit-ome",
     *,
@@ -77,6 +70,7 @@ def predict(
     batch_size: int = 8,
     save_to_db: bool = False,
 ) -> None:
+    """Run inference with a SetFit model on the dataset."""
     if run_id is None:
         run_id = secrets.token_hex(8)
 
@@ -91,7 +85,3 @@ def predict(
     run_df = evaluate_results(results_df, run_id=run_id, model_name=model_name)
     if save_to_db:
         save_results_to_db(results_df, run_df)
-
-
-if __name__ == "__main__":
-    cli()

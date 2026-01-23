@@ -8,6 +8,8 @@ version = "0.1.0"
 description = "Hackathon OMÉ x Data For Good on TV Report Classification"
 readme = "README.md"
 requires-python = ">=3.12"
+scripts = { reporto = "reporto.cli:cli" }
+
 dependencies = [
   # Utilities
   "anyio==4.12.1",
