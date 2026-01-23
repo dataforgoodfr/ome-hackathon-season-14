@@ -1,0 +1,122 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+minimum_pre_commit_version: 4.0.0
+default_language_version:
+  python: python3.12
+default_stages:
+  - pre-commit
+  - pre-push
+  - post-merge
+default_install_hook_types:
+  - pre-commit
+  - post-checkout
+  - post-merge
+repos:
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-toml
+      - id: check-yaml
+        args:
+          - --allow-multiple-documents
+      - id: check-merge-conflict
+        args:
+          - --assume-in-merge
+      - id: check-symlinks
+      - id: destroyed-symlinks
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      - id: detect-private-key
+      - id: detect-aws-credentials
+        args:
+          - --allow-missing-credentials
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: name-tests-test
+        args:
+          - --pytest-test-first
+  - repo: local
+    hooks:
+      - id: forbid-yml-file
+        name: Forbid .yml extension
+        entry: Yaml file must have the .yaml extension
+        language: fail
+        files: ".*\\.yml"
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: "v3.1.0"
+    hooks:
+      - id: prettier
+        entry: prettier --write --list-different --ignore-unknown
+        files: "\\.(json|md|yaml)$"
+        exclude: ".copier-answers.yaml"
+
+  # Check commits
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.2.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.8.12
+    hooks:
+      - id: uv-lock
+  # Check Python files (using local setup for coherence)
+  - repo: local
+    hooks:
+      - id: check-versions-coherence
+        name: check-versions-coherence
+        language: system
+        entry: make check-versions-coherence
+        pass_filenames: false
+        require_serial: true
+      - id: black
+        name: black
+        language: system
+        entry: uv run black
+        types_or: [python, pyi]
+        require_serial: true
+      - id: ruff
+        name: ruff
+        language: system
+        entry: uv run ruff check
+        args: ["--force-exclude", "--fix"]
+        types_or: [python, pyi]
+        require_serial: true
+      - id: mypy
+        name: mypy
+        language: system
+        entry: uv run mypy
+        types_or: [python, pyi]
+        require_serial: true
+      - id: export-requirements
+        name: export-requirements
+        language: system
+        entry: make export-requirements
+        files: "^(pyproject.toml|requirements.txt)$"
+        pass_filenames: false
+  # Check Docker & shell scripts
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.13.1-beta
+    hooks:
+      - id: hadolint
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.11.0
+    hooks:
+      - id: shellcheck
+        name: shellcheck
+
+  # Check Github actions & workflows
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.7
+    hooks:
+      - id: actionlint
+        args:
+          - -ignore=SC2129
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.33.3
+    hooks:
+      - id: check-github-actions
+      - id: check-github-workflows
+      - id: check-dependabot

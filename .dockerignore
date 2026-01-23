@@ -1,0 +1,27 @@
+Dockerfile
+docker-compose.yml
+**/.git
+**/.gitignore
+**/.aws
+**/.ssh
+**/*.env
+
+# Python
+**/__pycache__/
+.pytest_cache/
+.ruff_cache/
+.tox/
+.venv/
+.mypy_cache/
+dist/
+
+# Coverage files
+coverage.xml
+.coverage
+junit-coverage.xml
+
+# IDE
+.DS_Store
+.idea
+.vscode
+.ipynb_checkpoints/

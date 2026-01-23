@@ -5,48 +5,244 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    # Utilities
-    "anyio==4.12.1",
-    "httpx==0.28.1",
-    "pyyaml==6.0.3",
-    "tqdm==4.67.1",
-    # Database
-    "sqlalchemy==2.0.46",
-    "psycopg==3.3.2",
-    # Computations
-    "networkx==3.6.1",
-    "numpy==2.4.1",
-    "pandas==2.3.3",
-    "scipy==1.17.0",
-    # Dataset
-    "datasets==4.5.0",
-    "evaluate==0.4.6",
-    # ML
-    "torch==2.9.1",
-    "tokenizers==0.22.2",
-    "transformers==4.57.6",
-    "accelerate==1.12.0",
-    "sentence-transformers==5.2.0",
-    "setfit==1.1.3",
-    "scikit-learn==1.8.0",
-    # Visualization
-    "streamlit>=1.53.1",
+  # Utilities
+  "anyio==4.12.1",
+  "httpx==0.28.1",
+  "pyyaml==6.0.3",
+  "tqdm==4.67.1",
+  "cyclopts>=4.5.0",
+  "pydantic>=2.12.5",
+  # Database
+  "sqlalchemy==2.0.46",
+  "psycopg==3.3.2",
+  # Computations
+  "networkx==3.6.1",
+  "numpy==2.4.1",
+  "pandas==2.3.3",
+  "scipy==1.17.0",
+  # Dataset
+  "datasets==4.5.0",
+  "evaluate==0.4.6",
+  # ML
+  "torch==2.9.1",
+  "tokenizers==0.22.2",
+  "transformers==4.57.6",
+  "accelerate==1.12.0",
+  "sentence-transformers==5.2.0",
+  "setfit==1.1.3",
+  "scikit-learn==1.8.0",
+  # Visualization
+  "streamlit>=1.53.1",
 ]
 
 [dependency-groups]
-dev = [
-    "ipdb>=0.13.13",
-    "ipython>=9.9.0",
-    "rich>=14.2.0",
-]
+dev = ["ipdb>=0.13.13", "ipython>=9.9.0", "rich>=14.2.0"]
 lint = [
-    "black>=26.1.0",
-    "mypy[faster-cache]>=1.19.1",
-    "pre-commit>=4.5.1",
-    "ruff>=0.14.14",
+  "black>=26.1.0",
+  "mypy[faster-cache]>=1.19.1",
+  "pre-commit>=4.5.1",
+  "ruff>=0.14.14",
 ]
-test = [
-    "pytest>=9.0.2",
-    "pytest-cov>=7.0.0",
+test = ["pytest>=9.0.2", "pytest-cov>=7.0.0"]
+
+
+# --------------------------------------------------
+#       Linters config
+# --------------------------------------------------
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+preview = false
+
+# --- mypy ---
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "src/"
+local_partial_types = true
+scripts_are_modules = true
+ignore_missing_imports = true
+namespace_packages = true
+explicit_package_bases = true
+show_error_codes = true
+disallow_any_generics = true
+disallow_any_unimported = false # Hackathon
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+implicit_optional = false
+strict_equality = true
+strict_optional = true
+warn_incomplete_stub = true
+warn_no_return = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+warn_unused_ignores = true
+warn_unused_configs = true
+enable_error_code = [
+  "redundant-self",
+  "redundant-expr",
+  "possibly-undefined",
+  "truthy-bool",
+  "truthy-iterable",
+  "ignore-without-code",
+  "unused-awaitable",
+  "explicit-override",
+  "deprecated",
+  "exhaustive-match",
+]
+plugins = ["pydantic.mypy", "sqlalchemy.ext.mypy.plugin"]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+indent-width = 4
+preview = true
+
+[tool.ruff.lint]
+task-tags = ["TODO", "FIXME", "NOTE"]
+select = ["ALL"]
+ignore = [
+  "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
+  "COM812", # Trailing comma missing (relying on Black for this)
+  "CPY001", # Copyright at top of each file
+  "D100",   # Missing docstring in public module
+  "D104",   # Missing docstring in public package
+  "D105",   # Missing docstring in magic method
+  "DOC201", # return is not documented in docstring
+  "DOC402", # yield is not documented in docstring
+  "EM",     # Exception must not use a string literal
+  "FIX001", # No warning on FIXMEs
+  "FIX002", # No warning on TODOs
+  "TC006",  # Use quotes for types in typing.cast (not sure about this one, a bit contradictory)
+  "TC007",  # Use quotes for aliases (not sure about this one, a bit contradictory)
+  "TD001",  # Invalid TODO tag
+  "TD002",  # Missing author in TODO
+  "TD003",  # Missing issue link on the line following the TODO
+  "TRY003", # Avoid specifying long messages outside the exception class
+  # --- Hackathon mode
+  "ERA001", # Found commented-out code
+  "T201",   # `print` found
+  "D101",   # Missing docstring in public class
+  "D103",   # Missing docstring in public function
+]
+extend-fixable = [
+  "ICN001", # `package` should be imported as `alias`
+]
+unfixable = [
+  "ERA001", # Do not remove commented code by default
+  "F841",   # Do not remove unused variable by default
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+  "D",       # Docstrings
+  "FBT001",  # boolean positional argument
+  "PLC2701", # Private name import from external module
+  "PLR2004", # Magic value used in comparison
+  "S101",    # Use of assert detected
+  "SLF001",  # Private member accessed
+]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+required-imports = ["from __future__ import annotations"]
+known-first-party = []
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.pylint]
+max-args = 12
+max-branches = 20
+max-returns = 12
+max-statements = 100
+
+[tool.ruff.lint.mccabe]
+max-complexity = 20
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+
+[tool.ruff.lint.flake8-annotations]
+mypy-init-return = true
+suppress-none-returning = true
+suppress-dummy-args = true
+allow-star-arg-any = true
+
+[tool.ruff.lint.flake8-unused-arguments]
+ignore-variadic-names = true
+
+[tool.ruff.lint.flake8-type-checking]
+exempt-modules = ["annotated_types", "typing"]
+
+[tool.ruff.lint.flake8-import-conventions.extend-aliases]
+annotated_types = "at"
+dataclasses = "dc"
+datetime = "dt"
+
+
+# ----------------------------------------------------------------------
+#       Tests & Coverage
+# ----------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["--strict-markers", "--pdbcls=IPython.terminal.debugger:TerminalPdb"]
+filterwarnings = [
+  "error::", # Turn all warnings into errors by defaults
+]
+
+[tool.coverage.run]
+branch = true
+omit = ["tests/*", "src/**/__init__.py"]
+disable_warnings = ["no-data-collected"]
+
+[tool.coverage.paths]
+source = ["src/"]
+
+[tool.coverage.report]
+exclude_also = [
+  # Don't complain about missing debug-only code
+  "def __repr__",
+  "if self\\._?debug",
+
+  # Don't complain if tests don't hit defensive assertion code
+  "raise AssertionError",
+  "raise NotImplementedError",
+  "return NotImplemented",
+
+  # Don't complain if non-runnable code isn't run
+  "if 0:",
+  "if False:",
+  "if __name__ == .__main__.:",
+
+  # Don't complain about abstract methods, they aren't run
+  "@(abc\\.)?abstractmethod",
+
+  # Don't complain about unreachable code
+  "case never",
+  "assert_never(.+)",
+
+  # Don't complain for type checking statements
+  "if TYPE_CHECKING:",
+
+  # Don't complain for overloaded methods/functions
+  "@overload",
+]
+show_missing = true # Show missing statements lines
+skip_covered = true # Don't show files that are 100% covered
+skip_empty = true # Don't show files with no executable code
+# fail_under = 80 # Minimal coverage expected
+format = "markdown"
+
+[tool.coverage.json]
+pretty_print = true
