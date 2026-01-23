@@ -1,4 +1,4 @@
-import os
+from __future__ import annotations
 
 from datasets import load_dataset
 from setfit import SetFitModel, Trainer, TrainingArguments, sample_dataset

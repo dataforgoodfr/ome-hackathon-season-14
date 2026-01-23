@@ -1,12 +1,11 @@
 services:
-
   trainer:
     build:
       context: ./
       dockerfile: train/Dockerfile
     volumes:
       - "./models:/app/models:rw"
-    
+
   inference:
     build:
       context: ./
@@ -30,7 +29,7 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - './pgdata:/var/lib/postgresql/data' 
+      - "./pgdata:/var/lib/postgresql/data"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -41,16 +40,16 @@ services:
       POSTGRES_USER: user
       POSTGRES_DB: ome_hackathon
       POSTGRES_PASSWORD: ilovedataforgood
-    logging: # 
+    logging: #
       driver: none
     networks:
       - metanet1
   metabase:
-    image: metabase/metabase:latest
+    # image: metabase/metabase:latest
     # If on Apple Silicon use this image instead
-    # image: stephaneturquay/metabase-arm64:latest
+    image: stephaneturquay/metabase-arm64:latest
     volumes:
-      - './mb-data:/metabase-data'  # Volumes where Metabase data will be persisted
+      - "./mb-data:/metabase-data" # Volumes where Metabase data will be persisted
     ports:
       - 3000:3000
     healthcheck:
@@ -72,7 +71,6 @@ services:
         condition: service_healthy
     networks:
       - metanet1
-
 
 networks:
   metanet1:

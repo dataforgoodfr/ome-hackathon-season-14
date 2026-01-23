@@ -1,13 +1,11 @@
-FROM python:3.12-bookworm
+FROM python:3.12-slim-bookworm
 
 WORKDIR /app
 
 COPY ./requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY inference/logs.py .
-COPY inference/models.py .
-COPY inference/database_connection.py .
-COPY inference/predict.py .
+COPY common/ common/
+COPY inference/ inference/
 
-ENTRYPOINT [ "python", "predict.py" ]
+ENTRYPOINT [ "python", "inference/predict.py" ]

@@ -1,36 +1,31 @@
+from __future__ import annotations
+
 import hashlib
-import json
-import os
+import logging
+import pathlib
 from datetime import datetime
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
-import pandas as pd
 from database_connection import connect_to_db
-from logs import get_logger
 from sqlalchemy import (
-    ARRAY,
-    JSON,
-    BigInteger,
-    Boolean,
     Column,
     DateTime,
     Double,
-    ForeignKey,
-    Integer,
-    MetaData,
-    PrimaryKeyConstraint,
+    Engine,
     String,
-    Table,
     Text,
-    Uuid,
 )
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session, declarative_base
-from sqlalchemy.orm.decl_api import DeclarativeMeta
 
-logger = get_logger()
+if TYPE_CHECKING:
+    import pandas as pd
+    from sqlalchemy.orm.decl_api import DeclarativeMeta
 
-Base = declarative_base()
+_logger = logging.getLogger(__name__)
+
+Base: type[DeclarativeMeta] = declarative_base()
 
 
 class CategoryClassifications(Base):
@@ -54,48 +49,49 @@ class ClassificationMetrics(Base):
     run_id = Column(Text, primary_key=True)
     model_name = Column(String, nullable=False)
     mobility_transport_precision = Column(Double, nullable=True)
-    agriculture_alimentation_precision = Column(Text, nullable=True)
+    agriculture_alimentation_precision = Column(Double, nullable=True)  # Was Text ?
     energy_precision = Column(Double, nullable=True)
     other_precision = Column(Double, nullable=True)
     macro_precision = Column(Double, nullable=True)
     weighted_precision = Column(Double, nullable=True)
 
     mobility_transport_recall = Column(Double, nullable=True)
-    agriculture_alimentation_recall = Column(Text, nullable=True)
+    agriculture_alimentation_recall = Column(Double, nullable=True)  # Was Text ?
     energy_recall = Column(Double, nullable=True)
     other_recall = Column(Double, nullable=True)
     macro_recall = Column(Double, nullable=True)
     weighted_recall = Column(Double, nullable=True)
 
     mobility_transport_f1 = Column(Double, nullable=True)
-    agriculture_alimentation_f1 = Column(Text, nullable=True)
+    agriculture_alimentation_f1 = Column(Double, nullable=True)  # Was Text ?
     energy_f1 = Column(Double, nullable=True)
     other_f1 = Column(Double, nullable=True)
     macro_f1 = Column(Double, nullable=True)
     weighted_f1 = Column(Double, nullable=True)
 
 
-def create_tables(conn=None):
-    """Create tables in the PostgreSQL database"""
-    logger.info("Create tables")
+def create_tables(engine: Engine | None = None) -> None:
+    """Create tables in the PostgreSQL database."""
+    _logger.info("Creating tables")
     try:
-        if conn is None:
+        if engine is None:
             engine = connect_to_db()
-        else:
-            engine = conn
 
         Base.metadata.create_all(engine, checkfirst=True)
 
     except Exception as error:
-        logger.error(error)
+        _logger.exception("Error during table creation: %r", error)  # noqa: TRY401
     finally:
         if engine is not None:
             engine.dispose()
 
 
 def upsert_data_optimized(
-    session: Session, df: pd.DataFrame, table_class: DeclarativeMeta, primary_key: str
-):
+    session: Session,
+    df: pd.DataFrame,
+    table_class: DeclarativeMeta,
+    primary_key: str,
+) -> int:
     """
     Optimized upsert for large DataFrames using pandas and SQLAlchemy.
 
@@ -103,8 +99,10 @@ def upsert_data_optimized(
         session: SQLAlchemy session
         df (pd.DataFrame): DataFrame containing data to upsert
         table_class: SQLAlchemy table class
+        primary_key: Primary key column name
 
-    Returns:
+    Returns
+    -------
         int: Number of records processed
     """
     try:
@@ -127,22 +125,27 @@ def upsert_data_optimized(
 
     except Exception as e:
         session.rollback()
-        with open("errors.log", "w") as f:
-            f.write(f"Error during upsert: {e}")
+        _logger.exception("Error during upsert: %r", e)  # noqa: TRY401
+        pathlib.Path("errors.log").write_text(
+            f"Error during upsert: {e}",
+            encoding="utf-8",
+        )
         raise
 
 
-def get_consistent_hash(seed_string):
+def get_consistent_hash(seed_string: Any) -> str:
     obj_str = str(seed_string)
     sha256 = hashlib.sha256()
     sha256.update(obj_str.encode("utf-8"))
-    hash_value = sha256.hexdigest()
-    return hash_value
+    return sha256.hexdigest()
 
 
 def create_hash_id(
-    df: pd.DataFrame, column_name: str, id_column: str = "id", position: int = 0
-):
+    df: pd.DataFrame,
+    column_name: str,
+    id_column: str = "id",
+    position: int = 0,
+) -> pd.DataFrame:
     """
     Create a hash ID column by combining specified columns and applying a consistent hash function.
 
@@ -157,7 +160,8 @@ def create_hash_id(
             Defaults to "id".
         position (int, optional): The position of the new column in the dataframe.
 
-    Returns:
+    Returns
+    -------
         pd.DataFrame: DataFrame with the new hash column inserted at the beginning (index 0)
 
     Example:
@@ -176,7 +180,7 @@ def create_hash_id(
         - The function modifies the DataFrame in-place by inserting the new column at index 0
         - The hash is generated by concatenating id_columna and channel_name
         - Assumes 'channel_name' column exists in the DataFrame
-    """
+    """  # noqa: E501
     df.insert(
         position,
         column_name,
