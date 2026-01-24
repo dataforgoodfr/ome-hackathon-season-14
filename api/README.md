@@ -12,10 +12,18 @@ Frontend → API Gateway (port 8000) → Model Microservices
           PostgreSQL Database
 ```
 
+### Pipeline Flow
+
+1. **Deduplication**: Remove repetitive text loops from input
+2. **NER**: Extract actors (persons, organizations, locations, misc entities)
+3. **Sentiment Analysis**: Classify sentiment (positive/negative/neutral)
+4. **Storage**: Store enriched results in PostgreSQL
+
 ### Services
 
 - **API Gateway** (`api-gateway`): Main orchestration service on port 8000
 - **Sentiment Service** (`sentiment-service`): French sentiment analysis microservice on port 8001
+- **NER Service** (`ner-service`): Named Entity Recognition microservice on port 8002
 - **PostgreSQL**: Database for storing enriched analysis results
 
 ## Getting Started
@@ -23,7 +31,7 @@ Frontend → API Gateway (port 8000) → Model Microservices
 ### Start all services
 
 ```bash
-docker compose up --build api-gateway sentiment-service postgres
+docker compose up --build api-gateway sentiment-service ner-service postgres
 ```
 
 The API will be available at `http://localhost:8000`

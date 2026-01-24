@@ -34,6 +34,7 @@ from api.database.models import (
     upsert_data_optimized,
     create_hash_id,
 )
+from api.deduplication import remove_text_loops
 
 # Global database engine
 db_engine = None
@@ -118,6 +119,10 @@ class AnalysisResult(BaseModel):
     segment_id: str
     sentiment: Optional[str] = None
     sentiment_confidence: Optional[float] = None
+    actor_persons: Optional[List[str]] = None
+    actor_organizations: Optional[List[str]] = None
+    actor_locations: Optional[List[str]] = None
+    actor_misc: Optional[List[str]] = None
     # Future fields can be added here easily
     # classification: Optional[str] = None
     # keywords: Optional[List[str]] = None
@@ -233,31 +238,77 @@ async def call_sentiment_service(text: str) -> tuple[Optional[str], Optional[flo
         return None, None
 
 
+async def call_ner_service(text: str) -> dict:
+    """
+    Call NER service to extract entities
+    Returns dictionary with persons, organizations, locations, misc
+    """
+    if "ner" not in SERVICE_URLS:
+        return {"person": [], "organization": [], "location": [], "misc": []}
+
+    try:
+        async with httpx.AsyncClient(timeout=SERVICE_TIMEOUT) as client:
+            response = await client.post(
+                f"{SERVICE_URLS['ner']}/predict", json={"text": text}
+            )
+
+            if response.status_code == 200:
+                result = response.json()
+                # Convert response keys to match our database schema
+                return {
+                    "person": result.get("persons", []),
+                    "organization": result.get("organizations", []),
+                    "location": result.get("locations", []),
+                    "misc": result.get("misc", [])
+                }
+            else:
+                print(f"NER service returned status {response.status_code}")
+                return {"person": [], "organization": [], "location": [], "misc": []}
+
+    except Exception as e:
+        print(f"Error calling NER service: {e}")
+        return {"person": [], "organization": [], "location": [], "misc": []}
+
+
 @app.post("/analyze", response_model=AnalysisResult)
 async def analyze_segment(segment: SegmentData):
     """
     Analyze a single segment by querying all available model services
     and storing the enriched results in PostgreSQL
+    
+    Pipeline:
+    1. Deduplication - Remove repetitive text loops
+    2. NER - Extract actors (persons, organizations, locations, misc)
+    3. Sentiment Analysis - Classify sentiment
+    4. Store results in PostgreSQL
     """
     if not db_engine:
         raise HTTPException(status_code=503, detail="Database unavailable")
 
     try:
-        # Call sentiment service
-        sentiment, sentiment_confidence = await call_sentiment_service(
-            segment.report_text
+        # Step 1: Deduplication - Remove repetitive loops from text
+        deduplicated_text = remove_text_loops(segment.report_text)
+        
+        # Step 2 & 3: Call NER and Sentiment services in parallel
+        actors, (sentiment, sentiment_confidence) = await asyncio.gather(
+            call_ner_service(deduplicated_text),
+            call_sentiment_service(deduplicated_text)
         )
 
         # Future service calls can be added here in parallel:
         # classification, keywords = await asyncio.gather(
-        #     call_classification_service(segment.report_text),
-        #     call_keyword_service(segment.report_text)
+        #     call_classification_service(deduplicated_text),
+        #     call_keyword_service(deduplicated_text)
         # )
 
         # Prepare data for database
         segment_dict = segment.model_dump()
         segment_dict["sentiment"] = sentiment
         segment_dict["sentiment_confidence"] = sentiment_confidence
+        segment_dict["actor_persons"] = actors.get("person", [])
+        segment_dict["actor_organizations"] = actors.get("organization", [])
+        segment_dict["actor_locations"] = actors.get("location", [])
+        segment_dict["actor_misc"] = actors.get("misc", [])
 
         # Create DataFrame and add hash ID
         df = pd.DataFrame([segment_dict])
@@ -280,6 +331,10 @@ async def analyze_segment(segment: SegmentData):
             segment_id=segment.segment_id,
             sentiment=sentiment,
             sentiment_confidence=sentiment_confidence,
+            actor_persons=actors.get("person", []),
+            actor_organizations=actors.get("organization", []),
+            actor_locations=actors.get("location", []),
+            actor_misc=actors.get("misc", []),
             status="success",
         )
 
@@ -364,6 +419,10 @@ async def get_results(segment_id: str):
                 "predicted_category": result.predicted_category,
                 "sentiment": result.sentiment,
                 "sentiment_confidence": result.sentiment_confidence,
+                "actor_persons": result.actor_persons,
+                "actor_organizations": result.actor_organizations,
+                "actor_locations": result.actor_locations,
+                "actor_misc": result.actor_misc,
             }
 
             return result_dict

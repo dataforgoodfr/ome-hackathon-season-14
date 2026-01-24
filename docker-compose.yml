@@ -14,9 +14,11 @@ services:
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       SENTIMENT_SERVICE_URL: http://sentiment-service:8001
+      NER_SERVICE_URL: http://ner-service:8002
     depends_on:
       - postgres
       - sentiment-service
+      - ner-service
     networks:
       - metanet1
     volumes:
@@ -29,6 +31,16 @@ services:
       dockerfile: sentiment/Dockerfile
     expose:
       - "8001"
+    networks:
+      - metanet1
+
+  # NER Microservice
+  ner-service:
+    build:
+      context: ./
+      dockerfile: ner/Dockerfile
+    expose:
+      - "8002"
     networks:
       - metanet1
     

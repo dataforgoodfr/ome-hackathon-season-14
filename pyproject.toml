@@ -19,6 +19,7 @@ dependencies = [
     "seaborn>=0.13.2",
     "skimpy>=0.0.20",
     "sentencepiece>=0.2.1",
+    "spacy>=3.7.0",
     "sqlalchemy>=2.0.46",
     "tiktoken>=0.12.0",
     "torch>=2.10.0",

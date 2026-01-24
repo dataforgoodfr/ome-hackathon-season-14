@@ -12,7 +12,7 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.dialects.postgresql import ARRAY, insert as pg_insert
 from sqlalchemy.orm import Session, declarative_base
 from sqlalchemy.orm.decl_api import DeclarativeMeta
 
@@ -36,6 +36,11 @@ class CategoryClassifications(Base):
     predicted_category = Column(Text)
     sentiment = Column(Text)  # New: sentiment label (positive/negative/neutral)
     sentiment_confidence = Column(Double)  # New: confidence score for sentiment
+    # NER fields
+    actor_persons = Column(ARRAY(Text))  # List of persons extracted by NER
+    actor_organizations = Column(ARRAY(Text))  # List of organizations extracted by NER
+    actor_locations = Column(ARRAY(Text))  # List of locations extracted by NER
+    actor_misc = Column(ARRAY(Text))  # List of misc entities extracted by NER
 
 
 class ClassificationMetrics(Base):
