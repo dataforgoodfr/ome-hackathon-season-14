@@ -1,4 +1,7 @@
-ARG PYTHON_VERSION
+ARG PYTHON_VERSION=3.12
+ARG APP_NAME=reporto
+ARG APP_VERSION=0.0.0
+ARG COMMIT_HASH=dev
 
 # --------------------------------------------------
 #       Base image
