@@ -53,11 +53,6 @@ repos:
         exclude: ".copier-answers.yaml"
 
   # Check commits
-  - repo: https://github.com/compilerla/conventional-pre-commit
-    rev: v4.2.0
-    hooks:
-      - id: conventional-pre-commit
-        stages: [commit-msg]
   - repo: https://github.com/astral-sh/uv-pre-commit
     rev: 0.8.12
     hooks:
