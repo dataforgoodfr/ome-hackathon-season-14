@@ -148,7 +148,9 @@ def export_results_to_csv():
                 actor_persons,
                 actor_organizations,
                 actor_locations,
-                actor_misc
+                actor_misc,
+                keywords,
+                keywords_nouns
             FROM category_classification
             ORDER BY segment_start
         """
@@ -181,11 +183,13 @@ def export_results_to_csv():
         total_persons = df['actor_persons'].apply(lambda x: len(x) if isinstance(x, list) else 0).sum()
         total_orgs = df['actor_organizations'].apply(lambda x: len(x) if isinstance(x, list) else 0).sum()
         total_locations = df['actor_locations'].apply(lambda x: len(x) if isinstance(x, list) else 0).sum()
+        total_keywords = df['keywords'].apply(lambda x: len(x) if isinstance(x, list) else 0).sum()
         
         print(f"\n   Total entities extracted:")
         print(f"      Persons: {total_persons}")
         print(f"      Organizations: {total_orgs}")
         print(f"      Locations: {total_locations}")
+        print(f"      Keywords: {total_keywords}")
         
         return df
         

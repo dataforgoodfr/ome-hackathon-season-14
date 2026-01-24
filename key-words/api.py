@@ -31,14 +31,16 @@ class GenerateRequest(BaseModel):
     )
 
 class GenerateResponse(BaseModel):
-    """Request model for sentiment prediction"""
+    """Response model for keyword generation"""
 
-    texts: list[str]
+    keywords_filtered: list[str]
+    nouns_found: list[str]
 
     model_config = ConfigDict(
         json_schema_extra={
             "example": {
-                "texts": ["C'est un excellent reportage sur l'agriculture durable."]
+                "keywords_filtered": ["agriculture durable", "réchauffement climatique"],
+                "nouns_found": ["agriculture", "réchauffement"]
             }
         }
     )
@@ -51,9 +53,16 @@ app = FastAPI(
 )
 
 
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "service": "keywords",
+    }
 
 
-@app.post("/predict", response_model=GenerateResponse)
+@app.post("/predict")
 async def generate_keywords(request: GenerateRequest):
     nltk.download('stopwords', quiet=True)
     nltk.download('punkt_tab', quiet=True)
@@ -78,7 +87,15 @@ async def generate_keywords(request: GenerateRequest):
         lambda kw_list: filter_keywords_by_nouns(kw_list, nlp)
     )
 
-    return list(df["keywords_nouns_analysis"])
+    # Return list of results
+    results = []
+    for result in df["keywords_nouns_analysis"]:
+        results.append({
+            "keywords_filtered": result.get("keywords_filtered", []),
+            "nouns_found": result.get("nouns_found", [])
+        })
+    
+    return results
 
 
 
@@ -149,3 +166,7 @@ def filter_keywords_by_nouns(keywords_list: list, nlp_model) -> dict:
         "keywords_filtered": filtered_kw,
         "nouns_found": list(set(all_nouns))
     }
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8003)
