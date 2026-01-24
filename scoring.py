@@ -1,4 +1,3 @@
-
 """
 Embedding-based multi-theme scoring (3 themes) for LONG documents:
 - Build 1 centroid per theme from prototypes (mean embedding)
@@ -171,6 +170,7 @@ class ThemeSimilarityScorer:
     def _embed(self, text: str, is_query: bool) -> np.ndarray:
         text = (text or "").strip()
         if not text:
+            print('null')
             # vecteur nul si texte vide
             return np.zeros(768, dtype=np.float32)
         text = self._prefix(text, is_query=is_query)
@@ -209,6 +209,8 @@ class ThemeSimilarityScorer:
 
         return centroids
 
+#####
+
     def score_segment(
         self,
         text: str,
@@ -224,6 +226,88 @@ class ThemeSimilarityScorer:
         emb = self._embed(text, is_query=True)
 
         # Similarité à chaque centroïde (cosine = dot car normalisés)
+        scores = np.array([float(np.dot(emb, self.centroids[t])) for t in self.theme_order], dtype=float)
+
+        details = {
+            "scores_by_theme": dict(zip(self.theme_order, scores)),
+            "best_theme": self.theme_order[int(np.argmax(scores))],
+            "best_score": float(np.max(scores)),
+        }
+
+        if return_details:
+            # Prototype le plus proche par thème (très utile pour debug)
+            proto_matches = {}
+            for theme in self.theme_order:
+                if theme not in self.proto_embs:
+                    # fallback (rare si precompute=True)
+                    protos_in = [self._prefix(p.strip(), is_query=False) for p in self.themes_prototypes[theme]]
+                    self.proto_embs[theme] = self.model.encode(
+                        protos_in, normalize_embeddings=True, convert_to_numpy=True
+                    )
+
+                sims = util.cos_sim(emb, self.proto_embs[theme])[0].cpu().numpy()
+                idx = int(np.argmax(sims))
+                proto_matches[theme] = {
+                    "prototype": self.themes_prototypes[theme][idx],
+                    "prototype_score": float(sims[idx])
+                }
+
+            details["closest_prototypes"] = proto_matches
+
+        return scores, details
+
+    def multilabel(
+        self,
+        scores_vector: np.ndarray,
+        thresholds: Dict[str, float]
+    ) -> List[str]:
+        """
+        Transforme un vecteur de similarités en labels multi-label via seuils par thème.
+        """
+        labels = []
+        for i, theme in enumerate(self.theme_order):
+            if scores_vector[i] >= thresholds.get(theme, 0.0):
+                labels.append(theme)
+        return labels
+
+    def batch_score(
+        self,
+        texts: List[str],
+        return_details: bool = False
+    ) -> Tuple[np.ndarray, List[Dict[str, Any]]]:
+        """
+        Score un batch de segments. Utile pour performance.
+        Returns:
+          S: shape (n_texts, n_themes)
+          details_list (optionnel)
+        """
+        texts = [t or "" for t in texts]
+        inputs = [self._prefix(t.strip(), is_query=True) for t in texts]
+
+        E = self.model.encode(
+            inputs,
+            normalize_embeddings=True,
+            convert_to_numpy=True
+        )  # (n, d)
+
+        C = np.vstack([self.centroids[t] for t in self.theme_order]).T  # (d, n_themes)
+        S = E @ C  # (n, n_themes)
+
+        details_list = []
+        if return_details:
+            for i in range(len(texts)):
+                scores = S[i, :]
+                details_list.append({
+                    "best_theme": self.theme_order[int(np.argmax(scores))],
+                    "best_score": float(np.max(scores)),
+                    "scores_by_theme": dict(zip(self.theme_order, scores.tolist()))
+                })
+
+        return S, details_list
+
+
+
+#####
 
 
 # -----------------------------
