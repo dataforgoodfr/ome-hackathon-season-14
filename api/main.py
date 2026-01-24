@@ -34,7 +34,7 @@ from api.database.models import (
     upsert_data_optimized,
     create_hash_id,
 )
-from api.deduplication import remove_text_loops
+from acteur.deduplication import remove_text_loops
 
 # Global database engine
 db_engine = None
