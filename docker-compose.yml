@@ -1,5 +1,37 @@
 services:
 
+  # API Gateway - Main orchestration service
+  api-gateway:
+    build:
+      context: ./
+      dockerfile: api/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_DB: ome_hackathon
+      POSTGRES_PASSWORD: ilovedataforgood
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      SENTIMENT_SERVICE_URL: http://sentiment-service:8001
+    depends_on:
+      - postgres
+      - sentiment-service
+    networks:
+      - metanet1
+    volumes:
+      - "./data:/app/data:ro"
+
+  # Sentiment Analysis Microservice
+  sentiment-service:
+    build:
+      context: ./
+      dockerfile: sentiment/Dockerfile
+    expose:
+      - "8001"
+    networks:
+      - metanet1
+
   trainer:
     build:
       context: ./
