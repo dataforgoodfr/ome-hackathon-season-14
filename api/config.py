@@ -2,6 +2,7 @@
 Configuration for API Gateway
 Centralized service registry and database configuration
 """
+
 import os
 
 # Service URLs - Add new model services here

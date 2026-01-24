@@ -31,31 +31,24 @@ services:
       - "8001"
     networks:
       - metanet1
-
-  trainer:
-    build:
-      context: ./
-      dockerfile: train/Dockerfile
-    volumes:
-      - "./models:/app/models:rw"
     
-  inference:
-    build:
-      context: ./
-      dockerfile: inference/Dockerfile
-    volumes:
-      - "./models:/app/models:ro"
-      - "./output:/app/output:rw"
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_DB: ome_hackathon
-      POSTGRES_PASSWORD: ilovedataforgood
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-    depends_on:
-      - postgres
-    networks:
-      - metanet1
+  # inference:
+  #   build:
+  #     context: ./
+  #     dockerfile: inference/Dockerfile
+  #   volumes:
+  #     - "./models:/app/models:ro"
+  #     - "./output:/app/output:rw"
+  #   environment:
+  #     POSTGRES_USER: user
+  #     POSTGRES_DB: ome_hackathon
+  #     POSTGRES_PASSWORD: ilovedataforgood
+  #     POSTGRES_HOST: postgres
+  #     POSTGRES_PORT: 5432
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - metanet1
 
   postgres:
     image: postgres:15
@@ -64,7 +57,7 @@ services:
     volumes:
       - './pgdata:/var/lib/postgresql/data' 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U user -d ome_hackathon"]
       interval: 5s
       timeout: 5s
       retries: 5
