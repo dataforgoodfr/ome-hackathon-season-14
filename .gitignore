@@ -217,4 +217,3 @@ data/*.csv
 dataset/*.parquet
 dataset/*.csv
 *.parquet
-*.csv

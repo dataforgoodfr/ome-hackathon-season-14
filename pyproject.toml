@@ -14,6 +14,7 @@ dependencies = [
     "psycopg2-binary>=2.9.11",
     "pyarrow>=23.0.0",
     "pysentimiento>=0.7.3",
+    "rake-nltk>=1.0.6",
     "scikit-learn>=1.8.0",
     "seaborn>=0.13.2",
     "skimpy>=0.0.20",
