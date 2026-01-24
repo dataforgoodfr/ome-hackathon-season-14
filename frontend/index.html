@@ -356,6 +356,88 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
+        .classification-stats {
+            margin: 40px 0;
+            padding: 35px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .classification-stats h3 {
+            color: #667eea;
+            font-size: 1.6rem;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .classification-stats .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        .stat-card h4 {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .stat-label {
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .stat-card.neutre .stat-value { color: #6c757d; }
+        .stat-card.alternatif .stat-value { color: #28a745; }
+        .stat-card.productiviste .stat-value { color: #fd7e14; }
+        .stat-card.autre .stat-value { color: #17a2b8; }
+
+        .classification-summary {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .classification-summary .big-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .classification-summary p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
         .analysis-header {
             text-align: center;
             margin-bottom: 30px;
@@ -553,6 +635,43 @@
                     <div class="gallery-item">
                         <img src="../analysis/results/sentiment_televisions.png" alt="Sentiment by TV Channel" onclick="openModal(this.src)">
                         <div class="gallery-item-title">Sentiment by TV Channel</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Classification Statistics -->
+            <div class="classification-stats">
+                <h3>📊 Résultats de la Classification Automatique</h3>
+                
+                <div class="classification-summary">
+                    <p>✅ Classification complétée avec succès</p>
+                    <div class="big-number">2,565</div>
+                    <p>reportages analysés et catégorisés</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card neutre">
+                        <h4>Neutre</h4>
+                        <div class="stat-value">36.3%</div>
+                        <div class="stat-label">932 reportages</div>
+                    </div>
+
+                    <div class="stat-card alternatif">
+                        <h4>Alternatif</h4>
+                        <div class="stat-value">34.1%</div>
+                        <div class="stat-label">874 reportages</div>
+                    </div>
+
+                    <div class="stat-card productiviste">
+                        <h4>Productiviste</h4>
+                        <div class="stat-value">28.1%</div>
+                        <div class="stat-label">722 reportages</div>
+                    </div>
+
+                    <div class="stat-card autre">
+                        <h4>Autre</h4>
+                        <div class="stat-value">1.4%</div>
+                        <div class="stat-label">37 reportages</div>
                     </div>
                 </div>
             </div>
