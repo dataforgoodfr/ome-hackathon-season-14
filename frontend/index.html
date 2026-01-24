@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 65%;
             margin: 0 auto;
             background: white;
             border-radius: 12px;
@@ -45,7 +45,7 @@
         }
 
         .content {
-            padding: 30px;
+            padding: 40px;
         }
 
         .input-section {
@@ -308,6 +308,144 @@
             margin-left: 10px;
         }
 
+        .analysis-section {
+            margin-top: 40px;
+            padding-top: 40px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .project-intro {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .project-intro h2 {
+            color: #667eea;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .project-intro p {
+            color: #333;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .project-intro ul {
+            color: #333;
+            font-size: 1rem;
+            line-height: 1.8;
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        .project-intro ul li {
+            margin-bottom: 8px;
+        }
+
+        .project-intro img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .analysis-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .analysis-header h2 {
+            color: #667eea;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .analysis-header p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+            margin-top: 30px;
+        }
+
+        .gallery-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: auto;
+            display: block;
+            cursor: pointer;
+        }
+
+        .gallery-item-title {
+            padding: 15px;
+            background: white;
+            font-weight: 600;
+            color: #333;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: #667eea;
+        }
+
         @media (max-width: 768px) {
             .header h1 {
                 font-size: 1.5rem;
@@ -320,6 +458,15 @@
             .button-section {
                 flex-direction: column;
             }
+
+            .gallery {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .analysis-header h2 {
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
@@ -331,6 +478,85 @@
         </div>
 
         <div class="content">
+            <!-- Project Introduction -->
+            <div class="project-intro">
+                <h2>Étude de la représentation de l'agriculture dans les médias Français</h2>
+                <p>
+                    <strong>Objectif :</strong> Pouvoir classifier un reportage, notamment son positionnement vis-à-vis d'un modèle d'agriculture alternatif.
+                </p>
+                <p>
+                    <strong>Méthodologie :</strong>
+                </p>
+                <ul>
+                    <li>Recherche d'indicateurs pertinents</li>
+                    <li>Nettoyage de la base de données</li>
+                    <li>Analyse de sentiments</li>
+                    <li>Recherche de mots-clés</li>
+                    <li>Recherche d'acteurs cités et localisations</li>
+                </ul>
+                <img src="./Explication.png" alt="Explication du projet" onclick="openModal(this.src)">
+            </div>
+
+            <!-- Dataset Analysis Section -->
+            <div class="analysis-section">
+                <div class="analysis-header">
+                    <h2>📊 Dataset Analysis Results</h2>
+                    <p>Comprehensive analysis visualizations from the complete dataset</p>
+                </div>
+
+                <div class="gallery">
+                    <div class="gallery-item">
+                        <img src="../analysis/results/sentiment.png" alt="Sentiment Distribution" onclick="openModal(this.src)">
+                        <div class="gallery-item-title">Sentiment Distribution</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="../analysis/results/temporal.png" alt="Temporal Analysis" onclick="openModal(this.src)">
+                        <div class="gallery-item-title">Temporal Analysis</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="../analysis/results/actors.png" alt="Top Actors" onclick="openModal(this.src)">
+                        <div class="gallery-item-title">Top Actors</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="../analysis/results/actors_sentiments.png" alt="Actors by Sentiment" onclick="openModal(this.src)">
+                        <div class="gallery-item-title">Actors by Sentiment</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="../analysis/results/chaines.png" alt="TV Channels Distribution" onclick="openModal(this.src)">
+                        <div class="gallery-item-title">TV Channels Distribution</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="../analysis/results/keywords.png" alt="Top Keywords" onclick="openModal(this.src)">
+                        <div class="gallery-item-title">Top Keywords</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="../analysis/results/localisations.png" alt="Top Locations" onclick="openModal(this.src)">
+                        <div class="gallery-item-title">Top Locations</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="../analysis/results/organisations.png" alt="Top Organizations" onclick="openModal(this.src)">
+                        <div class="gallery-item-title">Top Organizations</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="../analysis/results/sentiment_loc.png" alt="Sentiment by Location" onclick="openModal(this.src)">
+                        <div class="gallery-item-title">Sentiment by Location</div>
+                    </div>
+
+                    <div class="gallery-item">
+                        <img src="../analysis/results/sentiment_televisions.png" alt="Sentiment by TV Channel" onclick="openModal(this.src)">
+                        <div class="gallery-item-title">Sentiment by TV Channel</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="input-section">
                 <label for="textInput">Enter your text:</label>
                 <textarea 
@@ -410,6 +636,12 @@
                         <div id="keywordsNouns" class="tag-list"></div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Modal for image preview -->
+            <div id="imageModal" class="modal" onclick="closeModal()">
+                <span class="modal-close">&times;</span>
+                <img class="modal-content" id="modalImage">
             </div>
         </div>
     </div>
@@ -560,6 +792,26 @@
             if (e.key === 'Enter' && e.ctrlKey) {
                 e.preventDefault();
                 analyzeText();
+            }
+        });
+
+        // Modal functions for image preview
+        function openModal(imageSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImage = document.getElementById('modalImage');
+            modal.classList.add('active');
+            modalImage.src = imageSrc;
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('imageModal');
+            modal.classList.remove('active');
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
             }
         });
     </script>
