@@ -579,6 +579,95 @@
                 <img src="./Explication.png" alt="Explication du projet" onclick="openModal(this.src)">
             </div>
 
+            <!-- Live Analysis Section -->
+            <div class="analysis-section">
+                <div class="analysis-header">
+                    <h2>🔬 Live Text Analysis</h2>
+                    <p>Analyze your own text in real-time with our AI-powered tools</p>
+                </div>
+
+                <div class="input-section">
+                    <label for="textInput">Enter your text:</label>
+                    <textarea 
+                        id="textInput" 
+                        placeholder="Type or paste the text you want to analyze here..."
+                    ></textarea>
+                </div>
+            </div>
+
+            <div class="button-section">
+                <button class="analyze-btn" onclick="analyzeText()">
+                    🔍 Analyze Text
+                </button>
+                <button class="clear-btn" onclick="clearAll()">
+                    🗑️ Clear
+                </button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing your text...</p>
+            </div>
+
+            <div class="error" id="error"></div>
+
+            <div class="results" id="results">
+                <div class="result-card">
+                    <h3>😊 Sentiment Analysis</h3>
+                    <div class="result-item">
+                        <span class="result-label">Sentiment:</span>
+                        <span id="sentiment" class="sentiment"></span>
+                        <span id="sentimentConfidence" class="confidence"></span>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3>🌾 Agricultural Classification</h3>
+                    <div class="result-item">
+                        <span class="result-label">Category:</span>
+                        <span id="agriculturalCategory" class="classification"></span>
+                    </div>
+                    <div class="result-item" style="font-size: 0.9rem; color: #666; margin-top: 10px;">
+                        <strong>Productiviste:</strong> Intensive/industrial agriculture<br>
+                        <strong>Alternatif:</strong> Sustainable/organic/agroecology<br>
+                        <strong>Neutre:</strong> General agricultural discourse<br>
+                        <strong>Autre:</strong> Non-agricultural content
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3>👤 Named Entity Recognition (NER)</h3>
+                    <div class="result-item">
+                        <span class="result-label">Persons:</span>
+                        <div id="persons" class="tag-list"></div>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Organizations:</span>
+                        <div id="organizations" class="tag-list"></div>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Locations:</span>
+                        <div id="locations" class="tag-list"></div>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Miscellaneous:</span>
+                        <div id="misc" class="tag-list"></div>
+                    </div>
+                </div>
+
+                <div class="result-card">
+                    <h3>🔑 Keywords</h3>
+                    <div class="result-item">
+                        <span class="result-label">Filtered Keywords:</span>
+                        <div id="keywords" class="tag-list"></div>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Nouns:</span>
+                        <div id="keywordsNouns" class="tag-list"></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Dataset Analysis Section -->
             <div class="analysis-section">
                 <div class="analysis-header">
@@ -672,87 +761,6 @@
                         <h4>Autre</h4>
                         <div class="stat-value">1.4%</div>
                         <div class="stat-label">37 reportages</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="input-section">
-                <label for="textInput">Enter your text:</label>
-                <textarea 
-                    id="textInput" 
-                    placeholder="Type or paste the text you want to analyze here..."
-                ></textarea>
-            </div>
-
-            <div class="button-section">
-                <button class="analyze-btn" onclick="analyzeText()">
-                    🔍 Analyze Text
-                </button>
-                <button class="clear-btn" onclick="clearAll()">
-                    🗑️ Clear
-                </button>
-            </div>
-
-            <div class="loading" id="loading">
-                <div class="spinner"></div>
-                <p>Analyzing your text...</p>
-            </div>
-
-            <div class="error" id="error"></div>
-
-            <div class="results" id="results">
-                <div class="result-card">
-                    <h3>😊 Sentiment Analysis</h3>
-                    <div class="result-item">
-                        <span class="result-label">Sentiment:</span>
-                        <span id="sentiment" class="sentiment"></span>
-                        <span id="sentimentConfidence" class="confidence"></span>
-                    </div>
-                </div>
-
-                <div class="result-card">
-                    <h3>🌾 Agricultural Classification</h3>
-                    <div class="result-item">
-                        <span class="result-label">Category:</span>
-                        <span id="agriculturalCategory" class="classification"></span>
-                    </div>
-                    <div class="result-item" style="font-size: 0.9rem; color: #666; margin-top: 10px;">
-                        <strong>Productiviste:</strong> Intensive/industrial agriculture<br>
-                        <strong>Alternatif:</strong> Sustainable/organic/agroecology<br>
-                        <strong>Neutre:</strong> General agricultural discourse<br>
-                        <strong>Autre:</strong> Non-agricultural content
-                    </div>
-                </div>
-
-                <div class="result-card">
-                    <h3>👤 Named Entity Recognition (NER)</h3>
-                    <div class="result-item">
-                        <span class="result-label">Persons:</span>
-                        <div id="persons" class="tag-list"></div>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Organizations:</span>
-                        <div id="organizations" class="tag-list"></div>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Locations:</span>
-                        <div id="locations" class="tag-list"></div>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Miscellaneous:</span>
-                        <div id="misc" class="tag-list"></div>
-                    </div>
-                </div>
-
-                <div class="result-card">
-                    <h3>🔑 Keywords</h3>
-                    <div class="result-item">
-                        <span class="result-label">Filtered Keywords:</span>
-                        <div id="keywords" class="tag-list"></div>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Nouns:</span>
-                        <div id="keywordsNouns" class="tag-list"></div>
                     </div>
                 </div>
             </div>
