@@ -34,6 +34,7 @@ def train(
     *,
     base_model: str = "dangvantuan/sentence-camembert-base",
     output_name: str | None = None,
+    task1: bool = False,
     # Dataset
     dataset_name: str = "DataForGood/ome-hackathon-season-14",
     num_samples: int = 8,
@@ -53,7 +54,7 @@ def train(
     # Preparing the dataset
     dataset = load_dataset(dataset_name, split="train")
     dataset = dataset.map(
-        lambda example: {"text": example["report_text"], "label": example["category"]}
+        lambda example: {"text": example["report_text"], "label": example["text_type"] if task1 else example["category"]}
     )
     train_dataset = dataset.train_test_split(test_size=test_size)
     eval_dataset = train_dataset["test"]
@@ -92,6 +93,7 @@ def train(
             dataset,
             model.predict,
             batch_size=batch_size,
+            task1=task1,
         )
         report = classification_report(
             results_df["llm_category"],
@@ -105,6 +107,7 @@ def train(
 @cli.command()
 def predict(
     model_path: str,
+    task1: bool = False,
     *,
     split: Literal["train", "test", "validation"] = "test",
     run_id: str | None = None,
@@ -129,6 +132,7 @@ def predict(
         dataset,
         model.predict,
         batch_size=batch_size,
+        task1=task1,
     )
     run_df = evaluate_results(results_df, run_id=run_id, model_name=model_path)
     if save_to_db:
@@ -137,9 +141,6 @@ def predict(
         run_df.to_json(output_path, orient="records", lines=True)
         print(f"Results saved to {output_path}")
     else:
-        # TODO: Brut accuracy, that are better ways to compute scores
-        accuracy = run_df["llm_category"] == run_df["predicted_category"]
-        print(f"Accuracy: {accuracy:.3f}")
         print(run_df)
 
 
