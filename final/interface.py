@@ -2,9 +2,11 @@ from dataclasses import dataclass
 
 
 @dataclass
-class ChunksWithBoundaries:
-    chunks: list[str]
+class TextWithBoundaries:
+    text: str
+    words: list[str]
     index_boundaries: list[int]
+
 
 @dataclass
 class Segment:
