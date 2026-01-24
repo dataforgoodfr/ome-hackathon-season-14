@@ -2,6 +2,7 @@
 import numpy as np
 from typing import Dict, List, Any, Tuple
 from sentence_transformers import SentenceTransformer, util
+import json
 
 
 class ThemeSimilarityScorer:
@@ -114,23 +115,13 @@ def default_scorer() -> ThemeSimilarityScorer:
     """
     theme_order = ["agriculture_alimentation", "mobility_transport", "energy"]
 
-    themes_prototypes = {
-        "agriculture_alimentation": [
-            "Production agricole, cultures, élevage, intrants, irrigation.",
-            "Transformation agroalimentaire, sécurité sanitaire, traçabilité, HACCP.",
-            "Systèmes alimentaires durables, circuits courts, filières, approvisionnement.",
-        ],
-        "mobility_transport": [
-            "Transports publics, intermodalité, mobilité urbaine, congestion, ZFE.",
-            "Logistique, fret, supply chain, dernier kilomètre, hubs multimodaux.",
-            "Véhicules électriques, bornes, flotte, décarbonation des transports.",
-        ],
-        "energy": [
-            "Production et distribution d’énergie, réseaux, smart grids, flexibilité.",
-            "ENR : solaire, éolien, hydraulique, stockage batteries, hydrogène.",
-            "Efficacité énergétique, sobriété, mix énergétique, régulation, marchés.",
-        ],
-    }
+
+
+
+    with open("final/themes_prototypes_200.json", "r", encoding="utf-8") as f:
+        themes_prototypes = json.load(f)
+
+
 
     return ThemeSimilarityScorer(
         themes_prototypes=themes_prototypes,
