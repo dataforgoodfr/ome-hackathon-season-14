@@ -54,7 +54,10 @@ def train(
     # Preparing the dataset
     dataset = load_dataset(dataset_name, split="train")
     dataset = dataset.map(
-        lambda example: {"text": example["report_text"], "label": example["text_type"] if task1 else example["category"]}
+        lambda example: {
+            "text": example["report_text"],
+            "label": example["text_type"] if task1 else example["category"],
+        }
     )
     train_dataset = dataset.train_test_split(test_size=test_size)
     eval_dataset = train_dataset["test"]
