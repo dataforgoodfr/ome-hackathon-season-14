@@ -1,57 +1,204 @@
-# Team: Les puissants gardes forestiers
+# OME Hackathon Season 14 - Les puissants gardes forestiers
 
-# Start of Season 14 Hackathon - Data For Good x L’Observatoire des Médias sur l’Écologie
-As climate and environmental crises intensify at an unprecedented rate, media coverage of these issues is becoming a key lever for informing, raising awareness and mobilising society as a whole. 
+Data For Good x L'Observatoire des Médias sur l'Écologie
 
-However, media coverage of these issues remains largely insufficient, both in terms of volume and quality. According to the latest data from the International Media and Climate Change Observatory, global coverage of environmental issues has been in steady decline since 2022.
+## 🚀 Quick Start
 
-The Media Observatory on Ecology (OME) aims to objectively assess this phenomenon in France. In 2026, the methodology was improved, enabling more accurate detection of news reports. A second stage of analysis aims to identify, for certain target themes (agriculture/food and mobility), the angle of media coverage: impact on health, purchasing power, daily life, etc.
-## How to use this repo
-This repository is your starting point for the hackathon. Run the different services using 
+### Prerequisites
+
+- Python 3.11+ (Python 3.14 has limited ML library support)
+- Docker & Docker Compose (for inference service)
+- Git
+
+### Automated Setup
+
+Run the setup script to install all dependencies:
+
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+This will:
+- Install `uv` (fast Python package manager)
+- Install `ty` (type checker)
+- Install `ruff` (linter & formatter)
+- Create a virtual environment
+- Install all project dependencies
+
+### Manual Setup
+
+If you prefer manual setup:
+
+```bash
+# Install uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Install ty (optional, for type checking)
+curl -LsSf https://astral.sh/ty/install.sh | sh
+
+# Install ruff (optional, for linting and formatting)
+curl -LsSf https://astral.sh/ruff/install.sh | sh
+
+# Sync project dependencies
+uv sync
+
+# Activate virtual environment
+source .venv/bin/activate
+```
+
+## 📊 Dataset Exploration
+
+Explore the hackathon dataset:
+
+```bash
+uv run python dataset/explore.py
+```
+
+**Dataset Overview:**
+- 8,349 text samples from French TV channels
+- 4 channels: France 2, TF1, France 3-IDF, M6
+- Categories: agriculture/food, mobility/transport, energy, other
+- Text types: segments and reports
+- Average text length: ~31,874 characters
+
+## 🏗️ Project Structure
+
+```
+.
+├── dataset/
+│   └── explore.py          # Dataset exploration script
+├── inference/
+│   ├── database_connection.py  # PostgreSQL connection
+│   ├── models.py           # Database models
+│   ├── predict.py          # Inference logic
+│   ├── logs.py             # Logging utilities
+│   └── Dockerfile          # Inference service container
+├── train/
+│   ├── train.py            # Model training script
+│   └── Dockerfile          # Training service container
+├── models/                 # Trained models directory
+├── docker-compose.yml      # Multi-service orchestration
+├── pyproject.toml          # Python dependencies
+└── setup.sh                # Automated setup script
+```
+
+## 🐳 Docker Services
+
+Start the inference service with database and Metabase:
+
 ```bash
 docker compose up --build inference
-````
-The `--build` flag is optional in case you have updated the code in order to rebuild the dockerfile.
+```
 
-There are 4 services in the `docker-compose.yml` the most important ones are `inference`, `postgres` and `metabase`. With regards to training models, a little example script is present but feel free to train models on a Google collab environment or on your machine if the training is more optimised (for example when using Apple Silicon). The important service you will be judged on is the `inference` but feel free to store results in the postgres database that has been setup, and to use metabase for data visualisations. 
+Available services:
+- **inference**: Main prediction service
+- **postgres**: PostgreSQL database
+- **metabase**: Data visualization dashboard
+- **train**: Model training service (optional)
 
-Metabase and data visualisations can help illustrate the value your analysis brings to the solution, or to produce a demo environment, but ultimately you will be judged on the inference solution.
+Access Metabase at: http://localhost:3000
 
-Remember the judging criteria:
-* Depth of analysis
-* Level of technical maturity
-* Frugality
-* Use of FOSS tools and models
+## 📦 Installed Dependencies
 
-# Tasks
+### Core Dependencies
+- **pandas** (3.0.0) - Data manipulation
+- **pyarrow** (23.0.0) - Parquet file support
+- **huggingface-hub** (1.3.3) - Dataset loading
+- **datasets** (4.5.0) - Hugging Face datasets library
 
-You are not required to complete these tasks sequentially, you can pick and choose whatever part of the hackathon you find the most interesting and work on that.
+### Database
+- **sqlalchemy** (2.0.46) - Database ORM
+- **psycopg2-binary** (2.9.11) - PostgreSQL driver
 
-## Task 1: Classification and identification of news reports in the texts. 
+### Machine Learning
+- **scikit-learn** (1.8.0) - ML utilities and metrics
+- **scipy** (1.17.0) - Scientific computing
 
-The texts, retrieved using the new methodology currently being developed at the OMÉ, are quickly annotated with an LLM in two categories: “report” and “segment”. 
+### ⚠️ Known Issues
 
-The “report” category includes all texts considered to contain a complete report, while the “segment” category includes all texts considered to be a mixture of several segments from different reports/studio debates, etc.
+**ML Libraries on Python 3.14:**
+- `setfit`, `transformers`, and `tokenizers` fail to build due to Rust compilation errors
+- **Recommended**: Use Python 3.11 or 3.12 for full ML functionality
+- **Alternative**: Use Docker containers which have compatible Python versions
 
-The aim of the exercise is twofold. On the one hand, to replicate the results of the LLM, even if imperfect, with fewer computing resources. On the other hand, it is to provide a more open solution for analysing the semantic structure of the texts and how they differ from one another, and how the different parts of the text differ from one another. For this first step, be sure to analyse the different parts of the text by projecting them onto an embedding space.
+## 🎯 Hackathon Tasks
 
+### Task 1: Text Classification
+Classify texts into "report" vs "segment" categories with high efficiency and low resource usage.
 
-## Task 2: Classification of categories 
+**Approach:**
+- Use embeddings to analyze semantic structure
+- Replicate LLM results with fewer resources
+- Focus on FOSS tools and frugal solutions
 
-As in step one, there is a more trivial classification into four categories (Agriculture and food, Mobility and transport, Energy and other). There is also, and this is much more interesting, an open question about the content of the texts according to the categories.
+### Task 2: Category Classification
+Classify content into: Agriculture/Food, Mobility/Transport, Energy, or Other.
 
-The ultimate goal is to provide complete or partial answers to the questions asked in the ‘Examples of identifiable frameworks’. The advice here is not to get stuck in a crude approach using only gen ia, but to try to find simple solutions (even keyword approaches) that give good results. That's the winning formula!
+**Approach:**
+- Start with simple solutions (keyword-based)
+## 🔧 Development
 
-# Evaluation
+### Linting and Formatting
 
-This competition values creative solutions based on frugality. The questions are deliberately open-ended, allowing you to find solutions we have never considered. There is no single correct answer; the aim is to find solutions to a real problem we are facing! 
+Lint your code with `ruff`:
 
-Selection criteria:
+```bash
+ruff check .
+```
 
-* Comprehensiveness of the approach: how well the solution meets the needs.
-* Technical frugality.
-* Level of openness of the models used: consider the difference between open weights, open code and open source. If possible, avoid models from Big Tech.
-* Level of maturity and industrialisation: rather than just providing a notebook with more or less interesting results, consider using Docker to create a containerised solution with multiple services (there is an example in the repo).
+Auto-format your code:
 
+```bash
+ruff format .
+```
 
-NB: There will be no computing power available for the hackathon, so make sure you find a solution that can run on a local computer. You can also use Google Colab notebooks during the development phase, but the solution should be independent and run on a computer using Docker. Bear in mind that a slightly less powerful but much more frugal solution will be greatly appreciated. 
+### Type Checking
+
+Check for type errors using `ty`:
+### Type Checking
+
+Check for type errors using `ty`:
+
+```bash
+ty check
+```
+
+### Running Python Scripts
+
+Use `uv run` to execute scripts in the project environment:
+
+```bash
+uv run python <script.py>
+```
+
+### Adding Dependencies
+
+Add new packages with uv:
+
+```bash
+uv add <package-name>
+```
+
+## 📝 Evaluation Criteria
+
+1. **Depth of analysis** - Comprehensive solution to the problem
+2. **Technical maturity** - Production-ready, containerized solution
+3. **Frugality** - Efficient use of resources
+4. **FOSS tools** - Prefer open-source over Big Tech models
+
+## 🤝 Contributing
+
+This is a hackathon project for Data For Good x OME Season 14.
+
+**Team:** Les puissants gardes forestiers
+
+## 📄 License
+
+See LICENSE file for details.
+
+## 🔗 Resources
+
+- [uv documentation](https://docs.astral.sh/uv/)
+- [ty documentation](https://docs.astral.sh/ty/)
+- [OME Project Details](./README-subject.md)
