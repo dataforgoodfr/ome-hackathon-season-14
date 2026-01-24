@@ -3,7 +3,7 @@ import re
 CLEANING_TEXT_REGEX_PATTERN = re.compile(r"[^\w ]+")
 
 
-def remove_duplicated_text(input_text: str) -> str:
+def clean_input_text(input_text: str) -> str:
     """
     Main cleaning method :
     - Remove non alphanumeric characters
