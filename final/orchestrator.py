@@ -7,5 +7,6 @@ def preprocess_text(input_text: str) -> list[str]:
     chunks_with_boundaries = segment_by_embedding(
         clean_input_text(input_text),
     )
+    
 
     return merge_chunks_with_boundaries(chunks_with_boundaries)

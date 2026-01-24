@@ -2,6 +2,7 @@
 import argparse
 import json
 from scoring import default_scorer
+from orchestrator import preprocess_text
 
 
 def read_text_from_file(path: str) -> str:
@@ -24,28 +25,40 @@ def main():
 
     text = args.text if args.text else read_text_from_file(args.file)
 
+    split_text = preprocess_text(text)
+
+    # Explain number of duplicate blocs removed
+    # Print word count of initial
+    # Print word count of final
+
     scorer = default_scorer()
 
-    scores, details = scorer.score(text, return_details=args.details)
-
-    # Option: multi-label thresholds
-    labels = None
-    if args.thresholds:
-        thresholds = json.loads(args.thresholds)
-        labels = scorer.multilabel(scores, thresholds)
-
-    output = {
-        "scores": details["scores_by_theme"],
-        "best_theme": details["best_theme"],
-        "best_score": details["best_score"],
-    }
-    if labels is not None:
-        output["labels"] = labels
-    if args.details:
-        output["closest_prototypes"] = details.get("closest_prototypes", {})
-
-    print(json.dumps(output, ensure_ascii=False, indent=2))
+    for segment in split_text:
+        scores, details = scorer.score(segment, return_details=args.details)
+    
+        # Option: multi-label thresholds
+        labels = None
+        if args.thresholds:
+            thresholds = json.loads(args.thresholds)
+            labels = scorer.multilabel(scores, thresholds)
+    
+        output = {
+            "scores": details["scores_by_theme"],
+            "best_theme": details["best_theme"],
+            "best_score": details["best_score"],
+        }
+        if labels is not None:
+            output["labels"] = labels
+        if args.details:
+            output["closest_prototypes"] = details.get("closest_prototypes", {})
+    
+        print(json.dumps(output, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":
     main()
+
+
+
+
+
