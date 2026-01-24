@@ -110,6 +110,7 @@ def predict(
     run_id: str | None = None,
     batch_size: int = 8,
     save_to_db: bool = False,
+    output_path: Path | None = None,
 ) -> None:
     """Run inference with a SetFit model on the dataset."""  # noqa: DOC501
     if run_id is None:
@@ -132,6 +133,14 @@ def predict(
     run_df = evaluate_results(results_df, run_id=run_id, model_name=model_path)
     if save_to_db:
         save_results_to_db(results_df, run_df)
+    if output_path:
+        run_df.to_json(output_path, orient="records", lines=True)
+        print(f"Results saved to {output_path}")
+    else:
+        # TODO: Brut accuracy, that are better ways to compute scores
+        accuracy = run_df["llm_category"] == run_df["predicted_category"]
+        print(f"Accuracy: {accuracy:.3f}")
+        print(run_df)
 
 
 @cli.command()
