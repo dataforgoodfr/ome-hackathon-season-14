@@ -1,27 +1,22 @@
+import sys
+from pathlib import Path
 import pandas as pd
 from pysentimiento import create_analyzer
+
+# Add project root to path to import main module
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from main.main import get_agriculture_data, DATA_DIR
 
 # Load sentiment analysis model (Multilingual support including French)
 print("Loading sentiment analysis model...")
 sentiment_analyzer = create_analyzer(task="sentiment", lang="en")  # Using English as base for multilingual
 
-# Load dataset
-print("Loading dataset...")
-splits = {
-    "train": "data/train-00000-of-00001.parquet",
-    "test": "data/test-00000-of-00001.parquet",
-}
-df = pd.read_parquet(
-    "hf://datasets/DataForGood/ome-hackathon-season-14/" + splits["train"]
-)
-
-print(f"Total records: {len(df)}")
-
-# Filter for agriculture_alimentation category (equivalent to SQL WHERE category LIKE '%agriculture_alimentation%')
-df_filtered = df[df["category"].str.contains("agriculture_alimentation", case=False, na=False)]
-print(f"Filtered records (agriculture_alimentation): {len(df_filtered)}")
+# Load dataset using centralized data loader
+print("\nLoading dataset...")
+df_filtered = get_agriculture_data(split="train")
 
 # Take a small subset for testing (first 10 rows)
+# Remove this line to process the full dataset
 df_filtered = df_filtered.head(10)
 print(f"Using subset of {len(df_filtered)} records for testing")
 
@@ -54,11 +49,14 @@ print(f"\nSample results:")
 print(df_filtered[["channel_title", "report_text", "sentiment_analysis"]].head(10))
 
 # Save the results
-output_path = "dataset/train_agriculture_with_sentiment.parquet"
+output_dir = DATA_DIR.parent / "dataset"
+output_dir.mkdir(exist_ok=True)
+
+output_path = output_dir / "train_agriculture_with_sentiment.parquet"
 df_filtered.to_parquet(output_path, index=False)
 print(f"\nResults saved to: {output_path}")
 
 # Optional: Save as CSV for easy viewing
-csv_output_path = "dataset/train_agriculture_with_sentiment.csv"
+csv_output_path = output_dir / "train_agriculture_with_sentiment.csv"
 df_filtered.to_csv(csv_output_path, index=False)
 print(f"Results also saved as CSV to: {csv_output_path}")

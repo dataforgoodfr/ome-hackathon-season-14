@@ -210,3 +210,11 @@ models/*
 pgdata
 mb-data
 checkpoints
+
+# Data files
+data/*.parquet
+data/*.csv
+dataset/*.parquet
+dataset/*.csv
+*.parquet
+*.csv
