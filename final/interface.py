@@ -10,7 +10,8 @@ class ChunksWithBoundaries:
 class Segment:
     content: str
     word_count: int
-    category: str | None
+    category: str
+    score: float
 
 
 @dataclass

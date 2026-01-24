@@ -1,6 +1,6 @@
 from sentence_transformers import SentenceTransformer, util
 
-from processing.interface import ChunksWithBoundaries
+from final.interface import ChunksWithBoundaries
 
 model = SentenceTransformer("dangvantuan/french-document-embedding", trust_remote_code=True)
 
