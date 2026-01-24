@@ -22,3 +22,17 @@ Remember the judging criteria:
 - Level of technical maturity
 - Frugality
 - Use of FOSS tools and models
+
+## Dataset exploration (Streamlit)
+
+Download the parquet files into `./data`:
+
+```bash
+python scripts/download_dataset.py
+```
+
+Run the interactive explorer (Plotly charts, no PNG export):
+
+```bash
+streamlit run scripts/data_viz_app.py
+```

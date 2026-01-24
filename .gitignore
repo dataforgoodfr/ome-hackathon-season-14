@@ -210,3 +210,7 @@ models/*
 pgdata
 mb-data
 checkpoints
+
+data
+inference
+train
