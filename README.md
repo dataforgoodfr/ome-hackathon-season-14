@@ -1,3 +1,5 @@
+# Team: Les puissants gardes forestiers
+
 # Start of Season 14 Hackathon - Data For Good x L’Observatoire des Médias sur l’Écologie
 As climate and environmental crises intensify at an unprecedented rate, media coverage of these issues is becoming a key lever for informing, raising awareness and mobilising society as a whole. 
 
