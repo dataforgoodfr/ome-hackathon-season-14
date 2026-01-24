@@ -1,6 +1,6 @@
 from sentence_transformers import SentenceTransformer, util
 
-from processing.interface import TextWithBoundaries
+from final.interface import TextWithBoundaries
 
 # model = SentenceTransformer("dangvantuan/french-document-embedding", trust_remote_code=True)
 model = SentenceTransformer("intfloat/multilingual-e5-base", trust_remote_code=True)
@@ -18,7 +18,6 @@ def segment_by_embedding(text, window_size=50, step=20, threshold=0.90) -> TextW
     for start in window_starts:
         end = min(start + window_size, num_words)
         chunks.append(" ".join(words[start:end]))
-    print(len(chunks))
     if not chunks:
         return TextWithBoundaries(chunks=[], index_boundaries=[0])
 
@@ -32,7 +31,6 @@ def segment_by_embedding(text, window_size=50, step=20, threshold=0.90) -> TextW
 
     for i in range(len(embeddings) - 1):
         similarity = util.cos_sim(embeddings[i], embeddings[i+1])
-        print(similarity)
 
         if similarity < threshold:
             # Conflict resolution: map the window change back to the word index
