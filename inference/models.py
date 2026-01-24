@@ -1,6 +1,4 @@
 import hashlib
-import json
-import os
 from datetime import datetime
 
 import numpy as np
@@ -8,21 +6,11 @@ import pandas as pd
 from database_connection import connect_to_db
 from logs import get_logger
 from sqlalchemy import (
-    ARRAY,
-    JSON,
-    BigInteger,
-    Boolean,
     Column,
     DateTime,
     Double,
-    ForeignKey,
-    Integer,
-    MetaData,
-    PrimaryKeyConstraint,
     String,
-    Table,
     Text,
-    Uuid,
 )
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session, declarative_base

@@ -13,7 +13,7 @@ print("=" * 80)
 print("DATASET OVERVIEW")
 print("=" * 80)
 print(f"\nDataset shape: {df.shape[0]} rows, {df.shape[1]} columns")
-print(f"\nColumn names and types:")
+print("\nColumn names and types:")
 print(df.dtypes)
 
 print("\n" + "=" * 80)
@@ -71,7 +71,7 @@ print("TEXT LENGTH STATISTICS")
 print("=" * 80)
 if "report_text" in df.columns:
     df["text_length"] = df["report_text"].str.len()
-    print(f"Report text length stats:")
+    print("Report text length stats:")
     print(df["text_length"].describe())
 
 print("\n" + "=" * 80)

@@ -1,24 +1,30 @@
-FROM python:3.12-bookworm
+# Install uv
+FROM python:3.12-slim AS builder
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Change the working directory to the `app` directory
+WORKDIR /app
+
+# Copy project files first
+COPY pyproject.toml uv.lock ./
+COPY api ./api
+COPY main ./main
+
+# Install dependencies and project
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-editable
+
+FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install dependencies
-RUN pip install --no-cache-dir \
-    fastapi==0.128.0 \
-    uvicorn==0.40.0 \
-    httpx>=0.27.0 \
-    pandas>=3.0.0 \
-    sqlalchemy>=2.0.46 \
-    psycopg2-binary>=2.9.11 \
-    pyarrow>=23.0.0
-
-# Copy application code
-COPY api/ ./api/
-COPY main/main.py ./main/
-COPY main/__init__.py ./main/
+# Copy the environment and source code
+COPY --from=builder /app/.venv /app/.venv
+COPY --from=builder /app/api /app/api
+COPY --from=builder /app/main /app/main
 
 # Expose port
 EXPOSE 8000
 
 # Run the gateway
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/app/.venv/bin/uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
