@@ -34,6 +34,7 @@ class CategoryClassifications(Base):
     report_text = Column(Text)
     llm_category = Column(Text)
     predicted_category = Column(Text)
+    agricultural_category = Column(Text)  # Agricultural discourse classification (productiviste/alternatif/neutre/autre)
     sentiment = Column(Text)  # New: sentiment label (positive/negative/neutral)
     sentiment_confidence = Column(Double)  # New: confidence score for sentiment
     # NER fields
@@ -42,7 +43,7 @@ class CategoryClassifications(Base):
     actor_locations = Column(ARRAY(Text))  # List of locations extracted by NER
     actor_misc = Column(ARRAY(Text))  # List of misc entities extracted by NER
     # Keywords fields
-    keywords = Column(ARRAY(Text))  # List of keywords extracted from text
+    keywords_filtered = Column(ARRAY(Text))  # List of filtered keywords extracted from text
     keywords_nouns = Column(ARRAY(Text))  # List of nouns found in keywords
 
 

@@ -35,6 +35,7 @@ from api.database.models import (
     create_hash_id,
 )
 from .deduplication import remove_text_loops
+from .classification import classify_from_keywords
 
 # Global database engine
 db_engine = None
@@ -96,6 +97,7 @@ class SegmentData(BaseModel):
     report_text: str
     llm_category: Optional[str] = None
     predicted_category: Optional[str] = None
+    agricultural_category: Optional[str] = None
 
     class Config:
         json_schema_extra = {
@@ -123,10 +125,9 @@ class AnalysisResult(BaseModel):
     actor_organizations: Optional[List[str]] = None
     actor_locations: Optional[List[str]] = None
     actor_misc: Optional[List[str]] = None
-    keywords: Optional[List[str]] = None
+    keywords_filtered: Optional[List[str]] = None
     keywords_nouns: Optional[List[str]] = None
-    # Future fields can be added here easily
-    # classification: Optional[str] = None
+    agricultural_category: Optional[str] = None
     status: str = "success"
     message: Optional[str] = None
 
@@ -330,6 +331,10 @@ async def analyze_segment(segment: SegmentData):
             call_keywords_service(deduplicated_text)
         )
 
+        # Step 5: Classify agricultural discourse based on keywords
+        keywords_nouns = keywords_data.get("nouns", [])
+        agricultural_category = classify_from_keywords(keywords_nouns)
+
         # Prepare data for database
         segment_dict = segment.model_dump()
         segment_dict["sentiment"] = sentiment
@@ -338,8 +343,9 @@ async def analyze_segment(segment: SegmentData):
         segment_dict["actor_organizations"] = actors.get("organization", [])
         segment_dict["actor_locations"] = actors.get("location", [])
         segment_dict["actor_misc"] = actors.get("misc", [])
-        segment_dict["keywords"] = keywords_data.get("keywords", [])
-        segment_dict["keywords_nouns"] = keywords_data.get("nouns", [])
+        segment_dict["keywords_filtered"] = keywords_data.get("keywords", [])
+        segment_dict["keywords_nouns"] = keywords_nouns
+        segment_dict["agricultural_category"] = agricultural_category
 
         # Create DataFrame and add hash ID
         df = pd.DataFrame([segment_dict])
@@ -366,8 +372,9 @@ async def analyze_segment(segment: SegmentData):
             actor_organizations=actors.get("organization", []),
             actor_locations=actors.get("location", []),
             actor_misc=actors.get("misc", []),
-            keywords=keywords_data.get("keywords", []),
-            keywords_nouns=keywords_data.get("nouns", []),
+            keywords_filtered=keywords_data.get("keywords", []),
+            keywords_nouns=keywords_nouns,
+            agricultural_category=agricultural_category,
             status="success",
         )
 
@@ -450,13 +457,14 @@ async def get_results(segment_id: str):
                 "report_text": result.report_text,
                 "llm_category": result.llm_category,
                 "predicted_category": result.predicted_category,
+                "agricultural_category": result.agricultural_category,
                 "sentiment": result.sentiment,
                 "sentiment_confidence": result.sentiment_confidence,
                 "actor_persons": result.actor_persons,
                 "actor_organizations": result.actor_organizations,
                 "actor_locations": result.actor_locations,
                 "actor_misc": result.actor_misc,
-                "keywords": result.keywords,
+                "keywords_filtered": result.keywords_filtered,
                 "keywords_nouns": result.keywords_nouns,
             }
 

@@ -257,6 +257,37 @@
             color: #555;
         }
 
+        .classification {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .classification.productiviste {
+            background: #fff3e0;
+            color: #e65100;
+            border: 2px solid #ff9800;
+        }
+
+        .classification.alternatif {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 2px solid #4caf50;
+        }
+
+        .classification.neutre {
+            background: #e3f2fd;
+            color: #1565c0;
+            border: 2px solid #2196f3;
+        }
+
+        .classification.autre {
+            background: #f5f5f5;
+            color: #757575;
+            border: 2px solid #9e9e9e;
+        }
+
         .error {
             display: none;
             background: #ffebee;
@@ -335,6 +366,20 @@
                 </div>
 
                 <div class="result-card">
+                    <h3>🌾 Agricultural Classification</h3>
+                    <div class="result-item">
+                        <span class="result-label">Category:</span>
+                        <span id="agriculturalCategory" class="classification"></span>
+                    </div>
+                    <div class="result-item" style="font-size: 0.9rem; color: #666; margin-top: 10px;">
+                        <strong>Productiviste:</strong> Intensive/industrial agriculture<br>
+                        <strong>Alternatif:</strong> Sustainable/organic/agroecology<br>
+                        <strong>Neutre:</strong> General agricultural discourse<br>
+                        <strong>Autre:</strong> Non-agricultural content
+                    </div>
+                </div>
+
+                <div class="result-card">
                     <h3>👤 Named Entity Recognition (NER)</h3>
                     <div class="result-item">
                         <span class="result-label">Persons:</span>
@@ -357,7 +402,7 @@
                 <div class="result-card">
                     <h3>🔑 Keywords</h3>
                     <div class="result-item">
-                        <span class="result-label">All Keywords:</span>
+                        <span class="result-label">Filtered Keywords:</span>
                         <div id="keywords" class="tag-list"></div>
                     </div>
                     <div class="result-item">
@@ -441,6 +486,18 @@
                 document.getElementById('sentimentConfidence').textContent = '';
             }
 
+            // Agricultural Classification
+            const agriculturalCategory = data.agricultural_category || 'autre';
+            const categoryElement = document.getElementById('agriculturalCategory');
+            const categoryLabels = {
+                'productiviste': 'Productiviste',
+                'alternatif': 'Alternatif',
+                'neutre': 'Neutre',
+                'autre': 'Autre'
+            };
+            categoryElement.textContent = categoryLabels[agriculturalCategory] || 'Autre';
+            categoryElement.className = `classification ${agriculturalCategory}`;
+
             // NER - Persons
             displayTags('persons', data.actor_persons || [], 'person');
             
@@ -454,7 +511,7 @@
             displayTags('misc', data.actor_misc || [], 'misc');
 
             // Keywords
-            displayTags('keywords', data.keywords || [], 'keyword');
+            displayTags('keywords', data.keywords_filtered || [], 'keyword');
             displayTags('keywordsNouns', data.keywords_nouns || [], 'keyword');
 
             // Show results
