@@ -4,6 +4,7 @@ import secrets
 from pathlib import Path
 from typing import Literal
 
+import cyclopts
 from datasets import load_dataset
 from setfit import SetFitModel, Trainer, TrainingArguments, sample_dataset
 from sklearn.metrics import classification_report
@@ -21,6 +22,10 @@ from reporto.labels import LABELS
 MODELS_FOLDER = Path("models/")
 
 
+cli = cyclopts.App()
+
+
+@cli.command()
 def train(
     *,
     base_model: str = "dangvantuan/sentence-camembert-base",
@@ -93,6 +98,7 @@ def train(
         print(report)
 
 
+@cli.command()
 def predict(
     model_path: str,
     *,
@@ -101,14 +107,18 @@ def predict(
     batch_size: int = 8,
     save_to_db: bool = False,
 ) -> None:
-    """Run inference with a SetFit model on the dataset."""
+    """Run inference with a SetFit model on the dataset."""  # noqa: DOC501
     if run_id is None:
         run_id = secrets.token_hex(8)
 
     dataset = load_dataset("DataForGood/ome-hackathon-season-14", split=split)
-    if not Path(model_path).exists():
-        print(f"Path {model_path} is not local, looking for model on HF")
-    model = SetFitModel.from_pretrained(model_path)
+
+    try:
+        model = SetFitModel.from_pretrained(model_path)
+    except OSError as error:
+        raise FileNotFoundError(
+            f"Could not find model {model_path}, does it exists ?"
+        ) from error
 
     results_df = run_batched_inference(
         dataset,

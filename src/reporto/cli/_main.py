@@ -43,8 +43,7 @@ def _configure_logging(
 # https://cyclopts.readthedocs.io/en/latest/meta_app.html#meta-sub-app
 cli = _cli.meta
 
-cli.command(_run.train)
-cli.command(_run.predict)
+cli.command(_run.cli, name="*")
 
 if __name__ == "__main__":
     cli()
