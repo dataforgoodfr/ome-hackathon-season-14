@@ -123,9 +123,10 @@ class AnalysisResult(BaseModel):
     actor_organizations: Optional[List[str]] = None
     actor_locations: Optional[List[str]] = None
     actor_misc: Optional[List[str]] = None
+    keywords: Optional[List[str]] = None
+    keywords_nouns: Optional[List[str]] = None
     # Future fields can be added here easily
     # classification: Optional[str] = None
-    # keywords: Optional[List[str]] = None
     status: str = "success"
     message: Optional[str] = None
 
@@ -270,6 +271,39 @@ async def call_ner_service(text: str) -> dict:
         return {"person": [], "organization": [], "location": [], "misc": []}
 
 
+async def call_keywords_service(text: str) -> dict:
+    """
+    Call keywords service to extract keywords and nouns
+    Returns dictionary with keywords and keywords_nouns
+    """
+    if "keywords" not in SERVICE_URLS:
+        return {"keywords": [], "nouns": []}
+
+    try:
+        async with httpx.AsyncClient(timeout=SERVICE_TIMEOUT) as client:
+            response = await client.post(
+                f"{SERVICE_URLS['keywords']}/predict", json={"texts": [text]}
+            )
+
+            if response.status_code == 200:
+                result = response.json()
+                # Response is a list with one element containing the result dict
+                if isinstance(result, list) and len(result) > 0:
+                    kw_data = result[0]
+                    return {
+                        "keywords": kw_data.get("keywords_filtered", []),
+                        "nouns": kw_data.get("nouns_found", [])
+                    }
+                return {"keywords": [], "nouns": []}
+            else:
+                print(f"Keywords service returned status {response.status_code}")
+                return {"keywords": [], "nouns": []}
+
+    except Exception as e:
+        print(f"Error calling keywords service: {e}")
+        return {"keywords": [], "nouns": []}
+
+
 @app.post("/analyze", response_model=AnalysisResult)
 async def analyze_segment(segment: SegmentData):
     """
@@ -289,17 +323,12 @@ async def analyze_segment(segment: SegmentData):
         # Step 1: Deduplication - Remove repetitive loops from text
         deduplicated_text = remove_text_loops(segment.report_text)
         
-        # Step 2 & 3: Call NER and Sentiment services in parallel
-        actors, (sentiment, sentiment_confidence) = await asyncio.gather(
+        # Step 2, 3 & 4: Call NER, Sentiment and Keywords services in parallel
+        actors, (sentiment, sentiment_confidence), keywords_data = await asyncio.gather(
             call_ner_service(deduplicated_text),
-            call_sentiment_service(deduplicated_text)
+            call_sentiment_service(deduplicated_text),
+            call_keywords_service(deduplicated_text)
         )
-
-        # Future service calls can be added here in parallel:
-        # classification, keywords = await asyncio.gather(
-        #     call_classification_service(deduplicated_text),
-        #     call_keyword_service(deduplicated_text)
-        # )
 
         # Prepare data for database
         segment_dict = segment.model_dump()
@@ -309,6 +338,8 @@ async def analyze_segment(segment: SegmentData):
         segment_dict["actor_organizations"] = actors.get("organization", [])
         segment_dict["actor_locations"] = actors.get("location", [])
         segment_dict["actor_misc"] = actors.get("misc", [])
+        segment_dict["keywords"] = keywords_data.get("keywords", [])
+        segment_dict["keywords_nouns"] = keywords_data.get("nouns", [])
 
         # Create DataFrame and add hash ID
         df = pd.DataFrame([segment_dict])
@@ -335,6 +366,8 @@ async def analyze_segment(segment: SegmentData):
             actor_organizations=actors.get("organization", []),
             actor_locations=actors.get("location", []),
             actor_misc=actors.get("misc", []),
+            keywords=keywords_data.get("keywords", []),
+            keywords_nouns=keywords_data.get("nouns", []),
             status="success",
         )
 
@@ -423,6 +456,8 @@ async def get_results(segment_id: str):
                 "actor_organizations": result.actor_organizations,
                 "actor_locations": result.actor_locations,
                 "actor_misc": result.actor_misc,
+                "keywords": result.keywords,
+                "keywords_nouns": result.keywords_nouns,
             }
 
             return result_dict

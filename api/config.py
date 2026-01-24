@@ -9,9 +9,9 @@ import os
 SERVICE_URLS = {
     "sentiment": os.getenv("SENTIMENT_SERVICE_URL", "http://sentiment-service:8001"),
     "ner": os.getenv("NER_SERVICE_URL", "http://ner-service:8002"),
+    "keywords": os.getenv("KEYWORDS_SERVICE_URL", "http://keywords-service:8003"),
     # Example for future services:
-    # "classification": os.getenv("CLASSIFICATION_SERVICE_URL", "http://classification-service:8002"),
-    # "keyword": os.getenv("KEYWORD_SERVICE_URL", "http://keyword-service:8003"),
+    # "classification": os.getenv("CLASSIFICATION_SERVICE_URL", "http://classification-service:8004"),
 }
 
 # Database configuration

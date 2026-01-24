@@ -15,10 +15,12 @@ services:
       POSTGRES_PORT: 5432
       SENTIMENT_SERVICE_URL: http://sentiment-service:8001
       NER_SERVICE_URL: http://ner-service:8002
+      KEYWORDS_SERVICE_URL: http://keywords-service:8003
     depends_on:
       - postgres
       - sentiment-service
       - ner-service
+      - keywords-service
     networks:
       - metanet1
     volumes:
@@ -41,6 +43,16 @@ services:
       dockerfile: ner/Dockerfile
     expose:
       - "8002"
+    networks:
+      - metanet1
+
+  # Keywords Extraction Microservice
+  keywords-service:
+    build:
+      context: ./
+      dockerfile: key-words/Dockerfile
+    expose:
+      - "8003"
     networks:
       - metanet1
     

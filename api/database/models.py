@@ -41,6 +41,9 @@ class CategoryClassifications(Base):
     actor_organizations = Column(ARRAY(Text))  # List of organizations extracted by NER
     actor_locations = Column(ARRAY(Text))  # List of locations extracted by NER
     actor_misc = Column(ARRAY(Text))  # List of misc entities extracted by NER
+    # Keywords fields
+    keywords = Column(ARRAY(Text))  # List of keywords extracted from text
+    keywords_nouns = Column(ARRAY(Text))  # List of nouns found in keywords
 
 
 class ClassificationMetrics(Base):

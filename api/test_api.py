@@ -41,7 +41,8 @@ def query_postgres(segment_id: str):
             SELECT 
                 id, segment_id, channel_title, report_text,
                 sentiment, sentiment_confidence,
-                actor_persons, actor_organizations, actor_locations, actor_misc
+                actor_persons, actor_organizations, actor_locations, actor_misc,
+                keywords, keywords_nouns
             FROM category_classification
             WHERE segment_id = %s
         """
@@ -61,6 +62,8 @@ def query_postgres(segment_id: str):
             print(f"   Organizations: {result['actor_organizations']}")
             print(f"   Locations: {result['actor_locations']}")
             print(f"   Misc: {result['actor_misc']}")
+            print(f"   Keywords: {result['keywords']}")
+            print(f"   Keywords Nouns: {result['keywords_nouns']}")
             print(f"   Text preview: {result['report_text'][:100]}...")
             return result
         else:
@@ -110,6 +113,7 @@ def test_analyze_single():
         assert result.get("sentiment") is not None, "Sentiment should be present"
         assert result.get("actor_persons") is not None, "NER persons should be present"
         assert result.get("actor_locations") is not None, "NER locations should be present"
+        assert result.get("keywords") is not None, "Keywords should be present"
         
         print("\n📊 Pipeline Features Verified:")
         print(f"   ✓ Sentiment: {result['sentiment']}")
@@ -117,6 +121,8 @@ def test_analyze_single():
         print(f"   ✓ Organizations: {result['actor_organizations']}")
         print(f"   ✓ Locations: {result['actor_locations']}")
         print(f"   ✓ Misc: {result['actor_misc']}")
+        print(f"   ✓ Keywords: {result['keywords']}")
+        print(f"   ✓ Keywords Nouns: {result['keywords_nouns']}")
     else:
         print(f"❌ Error: {response.text}")
     
@@ -214,7 +220,7 @@ def test_full_pipeline():
     print("\n" + "="*80)
     print("🚀 FULL PIPELINE TEST")
     print("="*80)
-    print("Testing: Data Input -> Deduplication -> NER -> Sentiment -> PostgreSQL")
+    print("Testing: Data Input -> Deduplication -> NER -> Sentiment -> Keywords -> PostgreSQL")
     print("="*80 + "\n")
     
     # Test with repetitive text to verify deduplication
@@ -241,7 +247,7 @@ def test_full_pipeline():
     
     print("🔍 Step 2: Verifying API response contains all features...")
     checks_passed = 0
-    checks_total = 6
+    checks_total = 8
     
     if result.get("sentiment"):
         print(f"   ✓ Sentiment: {result['sentiment']} (confidence: {result.get('sentiment_confidence')})")
@@ -273,6 +279,18 @@ def test_full_pipeline():
     else:
         print("   ✗ Misc entities (NER): MISSING")
     
+    if result.get("keywords") is not None:
+        print(f"   ✓ Keywords: {result['keywords']}")
+        checks_passed += 1
+    else:
+        print("   ✗ Keywords: MISSING")
+    
+    if result.get("keywords_nouns") is not None:
+        print(f"   ✓ Keywords Nouns: {result['keywords_nouns']}")
+        checks_passed += 1
+    else:
+        print("   ✗ Keywords Nouns: MISSING")
+    
     if result.get("id"):
         print(f"   ✓ Database ID: {result['id']}")
         checks_passed += 1
@@ -296,7 +314,7 @@ def test_full_pipeline():
     
     print("🔍 Step 4: Verifying all pipeline features in database...")
     db_checks_passed = 0
-    db_checks_total = 5
+    db_checks_total = 7
     
     if db_result.get("sentiment"):
         print(f"   ✓ Sentiment in DB: {db_result['sentiment']}")
@@ -328,12 +346,24 @@ def test_full_pipeline():
     else:
         print("   ✗ Sentiment confidence in DB: MISSING")
     
+    if db_result.get("keywords") is not None:
+        print(f"   ✓ Keywords in DB: {db_result['keywords']}")
+        db_checks_passed += 1
+    else:
+        print("   ✗ Keywords in DB: MISSING")
+    
+    if db_result.get("keywords_nouns") is not None:
+        print(f"   ✓ Keywords Nouns in DB: {db_result['keywords_nouns']}")
+        db_checks_passed += 1
+    else:
+        print("   ✗ Keywords Nouns in DB: MISSING")
+    
     print(f"\n✅ Step 4 completed: {db_checks_passed}/{db_checks_total} database checks passed\n")
     
     print("="*80)
     if checks_passed == checks_total and db_checks_passed == db_checks_total:
         print("🎉 FULL PIPELINE TEST PASSED!")
-        print("   All features working: Deduplication ✓ NER ✓ Sentiment ✓ PostgreSQL ✓")
+        print("   All features working: Deduplication ✓ NER ✓ Sentiment ✓ Keywords ✓ PostgreSQL ✓")
     else:
         print("⚠️  FULL PIPELINE TEST COMPLETED WITH WARNINGS")
         print(f"   API checks: {checks_passed}/{checks_total}")
