@@ -44,14 +44,15 @@ WORKDIR /app
 FROM base AS builder
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-WORKDIR /build
+# Using the same folder for shebang in executable
+WORKDIR /app
 
 ENV UV_PYTHON_DOWNLOADS=never
 ENV UV_PYTHON_PREFERENCE=only-system
 ENV UV_CACHE_DIR=/root/.cache/uv
 ENV UV_LINK_MODE=copy
 ENV UV_COMPILE_BYTECODE=true
-ENV VIRTUAL_ENV=/build/.venv
+ENV VIRTUAL_ENV=/app/.venv
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/
 
@@ -86,6 +87,6 @@ USER ${USERNAME}
 
 ENV PATH="/app/.venv/bin:$PATH"
 
-COPY --chown=${USER_UID}:${USER_GID} --from=builder /build/.venv /app/.venv
+COPY --chown=${USER_UID}:${USER_GID} --from=builder /app/.venv /app/.venv
 
 RUN python -m reporto
