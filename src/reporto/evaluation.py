@@ -16,7 +16,12 @@ from reporto.db import (
     get_db_session,
     upsert_data_optimized,
 )
-from reporto.labels import LABELS, Label, get_numerical_labels
+from reporto.labels import (
+    LABELS,
+    Label,
+    get_numerical_labels,
+    get_numerical_labels_task1,
+)
 
 if TYPE_CHECKING:
     from datasets import Dataset
@@ -30,6 +35,7 @@ def run_batched_inference(
     predict: Callable[[list[str]], list[Label]],
     *,
     batch_size: int = 8,
+    task1: bool = False,
 ) -> pd.DataFrame:
     results: dict[str, list[Any]] = {
         "segment_id": [],
@@ -45,8 +51,12 @@ def run_batched_inference(
 
     for batch in dataset.batch(batch_size=batch_size):
         batch = cast(Mapping[str, list[Any]], batch)
-        preds = get_numerical_labels(predict(batch["report_text"]))
-        labels = get_numerical_labels(batch["category"])
+        if task1:
+            preds = get_numerical_labels_task1(predict(batch["report_text"]))
+            labels = get_numerical_labels_task1(batch["text_type"])
+        else:
+            preds = get_numerical_labels(predict(batch["report_text"]))
+            labels = get_numerical_labels(batch["category"])
         results["segment_id"].extend(batch["segment_id"])
         results["channel_title"].extend(batch["channel_title"])
         results["channel_name"].extend(batch["channel_name"])
@@ -94,6 +104,7 @@ def save_results_to_db(
     results_df: pd.DataFrame,
     run_df: pd.DataFrame,
 ) -> None:
+
     engine = connect_to_db()
     session = get_db_session(engine)
     create_tables(engine)
