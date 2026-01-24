@@ -1,13 +1,17 @@
 from __future__ import annotations
 
 import secrets
+from collections import Counter, defaultdict
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal, cast
 
 import cyclopts
-from datasets import load_dataset
+import yaml
+from datasets import DatasetDict, load_dataset
 from setfit import SetFitModel, Trainer, TrainingArguments, sample_dataset
 from sklearn.metrics import classification_report
+from tqdm.auto import tqdm
 
 from reporto.evaluation import (
     evaluate_results,
@@ -128,3 +132,49 @@ def predict(
     run_df = evaluate_results(results_df, run_id=run_id, model_name=model_path)
     if save_to_db:
         save_results_to_db(results_df, run_df)
+
+
+@cli.command()
+def compute_dataset_stats(
+    output_path: Path | None = None,
+    dataset_name: str = "DataForGood/ome-hackathon-season-14",
+    *,
+    splits: list[str] | None = None,
+    batch_size: int = 8,
+) -> None:
+    dataset = load_dataset(dataset_name)
+    if not isinstance(dataset, DatasetDict):
+        raise TypeError("Expected DatasetDict")
+
+    if splits is None:
+        splits = list(dataset)
+    assert isinstance(splits, list)
+    assert all(isinstance(s, str) for s in splits)
+
+    stats = defaultdict[str, Counter[str]](Counter[str])
+    for split in tqdm(splits, desc="Processing splits"):  # noqa: PLR1702
+        with tqdm(
+            desc=f"Processing {split} split",
+            total=len(dataset[split]),
+        ) as pbar:
+            for batch in dataset[split].batch(batch_size=batch_size):
+                batch = cast(Mapping[str, list[Any]], batch)
+                for key in ("channel_name", "country", "category", "text_type"):
+                    stats[key].update(batch[key])
+                for secondary_categories in batch["secondary_categories"]:
+                    stats["category"].update(secondary_categories)
+
+                for themes_str in batch["themes"]:
+                    if not themes_str:
+                        continue
+                    for theme_str in themes_str.split(","):
+                        if theme := theme_str.strip().lower():
+                            stats["theme"][theme] += 1
+                pbar.update(len(batch["category"]))
+
+    yaml_data = yaml.safe_dump({key: dict(counter) for key, counter in stats.items()})
+    print(yaml_data)
+    if output_path is not None:
+        output_path.parent.mkdir(exist_ok=True, parents=True)
+        output_path.write_text(yaml_data)
+        print(f"Saved to {output_path}")
