@@ -1,0 +1,25 @@
+from dataclasses import dataclass
+
+
+@dataclass
+class TextWithBoundaries:
+    text: str
+    words: list[str]
+    index_boundaries: list[int]
+
+
+@dataclass
+class Segment:
+    content: str
+    word_count: int
+    category: str
+    score: float
+
+
+@dataclass
+class TextAnalysis:
+    input_text: str
+    initial_word_count: int
+    nb_duplicates: int
+    final_word_count: int
+    segments: list[Segment]
