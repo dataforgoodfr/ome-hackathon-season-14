@@ -10,8 +10,7 @@ python placeholder/orchestrator.py
 It will generate a new dataset in a parquet format.
 
 We also did some work to classify these segments into the categories.
-
-To visualize our work you can do the following command :
+To visualize our work you can do the following commands :
 ```
 pip install -r requirements.txt
 streamlit run streamlit_app.py
