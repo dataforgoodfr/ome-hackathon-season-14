@@ -8,4 +8,4 @@ RUN pip install -r requirements.txt
 COPY final/ .
 
 
-ENTRYPOINT [ "python", "predict.py" ]
+ENTRYPOINT [ "python", "orchestrator.py" ]

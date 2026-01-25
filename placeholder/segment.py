@@ -1,6 +1,6 @@
 from sentence_transformers import SentenceTransformer, util
 
-from final.interface import TextWithBoundaries
+from placeholder.interface import TextWithBoundaries
 
 # model = SentenceTransformer("dangvantuan/french-document-embedding", trust_remote_code=True)
 model = SentenceTransformer("intfloat/multilingual-e5-base", trust_remote_code=True)

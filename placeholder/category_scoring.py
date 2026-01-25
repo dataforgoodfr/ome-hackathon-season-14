@@ -118,7 +118,7 @@ def default_scorer() -> ThemeSimilarityScorer:
 
 
 
-    with open("final/themes_prototypes_200.json", "r", encoding="utf-8") as f:
+    with open("placeholder/files/themes_prototypes_200.json", "r", encoding="utf-8") as f:
         themes_prototypes = json.load(f)
 
 

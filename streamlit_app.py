@@ -8,7 +8,7 @@ import plotly.express as px
 # On suppose que le fichier final/orchestrator.py contient la fonction predict_text
 # telle que vous l'avez fournie.
 try:
-    from final.orchestrator import predict_text
+    from placeholder.orchestrator import segment_and_categorize
 except ImportError as e:
     st.error(f"Erreur d'importation : {e}. Assurez-vous de lancer l'app depuis la racine du projet.")
     st.stop()
@@ -56,7 +56,7 @@ with col1:
     # Tentative de chargement du fichier par défaut
     default_text = ""
     try:
-        with open("final/input_text.txt", "r", encoding="utf-8") as f:
+        with open("placeholder/files/default_app_text.txt", "r", encoding="utf-8") as f:
             default_text = f.read()
     except FileNotFoundError:
         default_text = "Le fichier input_text.txt est introuvable. Collez votre texte ici."
@@ -76,7 +76,7 @@ if analyze_btn:
         with st.spinner("Segmentation et classification en cours..."):
             try:
                 # Appel à votre orchestrateur
-                result = predict_text(input_text)
+                result = segment_and_categorize(input_text)
 
                 # --- Métriques Globales ---
                 st.subheader("2. Métriques de Nettoyage")
