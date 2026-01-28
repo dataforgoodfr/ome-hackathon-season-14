@@ -2,7 +2,7 @@
 Comprehensive test script for the full API pipeline
 Tests: deduplication -> NER -> sentiment analysis -> PostgreSQL storage
 
-Run after starting services with: 
+Run after starting services with:
   docker compose up --build api-gateway sentiment-service ner-service postgres
 """
 
@@ -20,7 +20,7 @@ DB_CONFIG = {
     "port": 5432,
     "database": "ome_hackathon",
     "user": "user",
-    "password": "ilovedataforgood"
+    "password": "ilovedataforgood",
 }
 
 
@@ -32,11 +32,11 @@ def get_db_connection():
 def query_postgres(segment_id: str):
     """Query PostgreSQL to verify data was stored correctly"""
     print(f"🔍 Querying PostgreSQL for segment: {segment_id}")
-    
+
     try:
         conn = get_db_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
-        
+
         query = """
             SELECT 
                 id, segment_id, channel_title, report_text,
@@ -48,16 +48,18 @@ def query_postgres(segment_id: str):
         """
         cursor.execute(query, (segment_id,))
         result = cursor.fetchone()
-        
+
         cursor.close()
         conn.close()
-        
+
         if result:
             print("✅ Data found in PostgreSQL:")
             print(f"   ID: {result['id']}")
             print(f"   Segment ID: {result['segment_id']}")
             print(f"   Channel: {result['channel_title']}")
-            print(f"   Sentiment: {result['sentiment']} (confidence: {result['sentiment_confidence']})")
+            print(
+                f"   Sentiment: {result['sentiment']} (confidence: {result['sentiment_confidence']})"
+            )
             print(f"   Persons: {result['actor_persons']}")
             print(f"   Organizations: {result['actor_organizations']}")
             print(f"   Locations: {result['actor_locations']}")
@@ -69,7 +71,7 @@ def query_postgres(segment_id: str):
         else:
             print("❌ No data found in PostgreSQL")
             return None
-            
+
     except Exception as e:
         print(f"❌ Error querying PostgreSQL: {e}")
         return None
@@ -103,18 +105,20 @@ def test_analyze_single():
 
     response = requests.post(f"{API_URL}/analyze", json=segment_data)
     print(f"Status: {response.status_code}")
-    
+
     if response.status_code == 200:
         result = response.json()
         print("✅ Analysis successful!")
         print(json.dumps(result, indent=2))
-        
+
         # Verify the pipeline features are present
         assert result.get("sentiment") is not None, "Sentiment should be present"
         assert result.get("actor_persons") is not None, "NER persons should be present"
-        assert result.get("actor_locations") is not None, "NER locations should be present"
+        assert result.get("actor_locations") is not None, (
+            "NER locations should be present"
+        )
         assert result.get("keywords") is not None, "Keywords should be present"
-        
+
         print("\n📊 Pipeline Features Verified:")
         print(f"   ✓ Sentiment: {result['sentiment']}")
         print(f"   ✓ Persons: {result['actor_persons']}")
@@ -125,7 +129,7 @@ def test_analyze_single():
         print(f"   ✓ Keywords Nouns: {result['keywords_nouns']}")
     else:
         print(f"❌ Error: {response.text}")
-    
+
     print()
     return segment_data["segment_id"]
 
@@ -171,24 +175,24 @@ def test_batch_analysis():
 
     response = requests.post(f"{API_URL}/analyze/batch", json=batch_data)
     print(f"Status: {response.status_code}")
-    
+
     if response.status_code == 200:
         result = response.json()
         print(f"✅ Processed: {result['processed']}")
         print(f"✅ Successful: {result['successful']}")
         print(f"❌ Failed: {result['failed']}")
-        
+
         # Show details for first result
-        if result['results']:
-            first_result = result['results'][0]
-            print(f"\nFirst result details:")
+        if result["results"]:
+            first_result = result["results"][0]
+            print("\nFirst result details:")
             print(f"   Segment ID: {first_result['segment_id']}")
             print(f"   Sentiment: {first_result.get('sentiment')}")
             print(f"   Persons: {first_result.get('actor_persons', [])}")
             print(f"   Locations: {first_result.get('actor_locations', [])}")
     else:
         print(f"❌ Error: {response.text}")
-    
+
     print()
     return [seg["segment_id"] for seg in batch_data["segments"]]
 
@@ -217,12 +221,14 @@ def test_full_pipeline():
     3. Query PostgreSQL to confirm data storage
     4. Verify all pipeline features are in database
     """
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("🚀 FULL PIPELINE TEST")
-    print("="*80)
-    print("Testing: Data Input -> Deduplication -> NER -> Sentiment -> Keywords -> PostgreSQL")
-    print("="*80 + "\n")
-    
+    print("=" * 80)
+    print(
+        "Testing: Data Input -> Deduplication -> NER -> Sentiment -> Keywords -> PostgreSQL"
+    )
+    print("=" * 80 + "\n")
+
     # Test with repetitive text to verify deduplication
     test_segment = {
         "segment_id": "full_pipeline_test_999",
@@ -234,142 +240,148 @@ def test_full_pipeline():
         "report_text": "Le ministre de l'Agriculture, Marc Fesneau, a rencontré les représentants de la FNSEA à Paris ce mardi. Les agriculteurs français demandent plus de soutien face à la concurrence européenne. La région Bretagne est particulièrement touchée par cette crise agricole. Emmanuel Macron devrait s'exprimer prochainement sur ce sujet important.",
         "llm_category": "agriculture_alimentation",
     }
-    
+
     print("📤 Step 1: Submitting data to API...")
     response = requests.post(f"{API_URL}/analyze", json=test_segment)
-    
+
     if response.status_code != 200:
         print(f"❌ API request failed: {response.text}")
         return False
-    
+
     result = response.json()
     print("✅ Step 1 completed: Data submitted successfully\n")
-    
+
     print("🔍 Step 2: Verifying API response contains all features...")
     checks_passed = 0
     checks_total = 8
-    
+
     if result.get("sentiment"):
-        print(f"   ✓ Sentiment: {result['sentiment']} (confidence: {result.get('sentiment_confidence')})")
+        print(
+            f"   ✓ Sentiment: {result['sentiment']} (confidence: {result.get('sentiment_confidence')})"
+        )
         checks_passed += 1
     else:
         print("   ✗ Sentiment: MISSING")
-    
+
     if result.get("actor_persons") is not None:
         print(f"   ✓ Persons (NER): {result['actor_persons']}")
         checks_passed += 1
     else:
         print("   ✗ Persons (NER): MISSING")
-    
+
     if result.get("actor_organizations") is not None:
         print(f"   ✓ Organizations (NER): {result['actor_organizations']}")
         checks_passed += 1
     else:
         print("   ✗ Organizations (NER): MISSING")
-    
+
     if result.get("actor_locations") is not None:
         print(f"   ✓ Locations (NER): {result['actor_locations']}")
         checks_passed += 1
     else:
         print("   ✗ Locations (NER): MISSING")
-    
+
     if result.get("actor_misc") is not None:
         print(f"   ✓ Misc entities (NER): {result['actor_misc']}")
         checks_passed += 1
     else:
         print("   ✗ Misc entities (NER): MISSING")
-    
+
     if result.get("keywords") is not None:
         print(f"   ✓ Keywords: {result['keywords']}")
         checks_passed += 1
     else:
         print("   ✗ Keywords: MISSING")
-    
+
     if result.get("keywords_nouns") is not None:
         print(f"   ✓ Keywords Nouns: {result['keywords_nouns']}")
         checks_passed += 1
     else:
         print("   ✗ Keywords Nouns: MISSING")
-    
+
     if result.get("id"):
         print(f"   ✓ Database ID: {result['id']}")
         checks_passed += 1
     else:
         print("   ✗ Database ID: MISSING")
-    
+
     print(f"\n✅ Step 2 completed: {checks_passed}/{checks_total} checks passed\n")
-    
+
     # Wait a moment for data to be fully committed to database
     print("⏳ Waiting for database commit...")
     time.sleep(2)
-    
+
     print("🔍 Step 3: Querying PostgreSQL to verify data storage...")
     db_result = query_postgres(test_segment["segment_id"])
-    
+
     if not db_result:
         print("❌ Step 3 FAILED: Data not found in database\n")
         return False
-    
+
     print("\n✅ Step 3 completed: Data found in PostgreSQL\n")
-    
+
     print("🔍 Step 4: Verifying all pipeline features in database...")
     db_checks_passed = 0
     db_checks_total = 7
-    
+
     if db_result.get("sentiment"):
         print(f"   ✓ Sentiment in DB: {db_result['sentiment']}")
         db_checks_passed += 1
     else:
         print("   ✗ Sentiment in DB: MISSING")
-    
+
     if db_result.get("actor_persons"):
         print(f"   ✓ Persons in DB: {db_result['actor_persons']}")
         db_checks_passed += 1
     else:
         print("   ✗ Persons in DB: MISSING")
-    
+
     if db_result.get("actor_organizations") is not None:
         print(f"   ✓ Organizations in DB: {db_result['actor_organizations']}")
         db_checks_passed += 1
     else:
         print("   ✗ Organizations in DB: MISSING")
-    
+
     if db_result.get("actor_locations"):
         print(f"   ✓ Locations in DB: {db_result['actor_locations']}")
         db_checks_passed += 1
     else:
         print("   ✗ Locations in DB: MISSING")
-    
+
     if db_result.get("sentiment_confidence"):
         print(f"   ✓ Sentiment confidence in DB: {db_result['sentiment_confidence']}")
         db_checks_passed += 1
     else:
         print("   ✗ Sentiment confidence in DB: MISSING")
-    
+
     if db_result.get("keywords") is not None:
         print(f"   ✓ Keywords in DB: {db_result['keywords']}")
         db_checks_passed += 1
     else:
         print("   ✗ Keywords in DB: MISSING")
-    
+
     if db_result.get("keywords_nouns") is not None:
         print(f"   ✓ Keywords Nouns in DB: {db_result['keywords_nouns']}")
         db_checks_passed += 1
     else:
         print("   ✗ Keywords Nouns in DB: MISSING")
-    
-    print(f"\n✅ Step 4 completed: {db_checks_passed}/{db_checks_total} database checks passed\n")
-    
-    print("="*80)
+
+    print(
+        f"\n✅ Step 4 completed: {db_checks_passed}/{db_checks_total} database checks passed\n"
+    )
+
+    print("=" * 80)
     if checks_passed == checks_total and db_checks_passed == db_checks_total:
         print("🎉 FULL PIPELINE TEST PASSED!")
-        print("   All features working: Deduplication ✓ NER ✓ Sentiment ✓ Keywords ✓ PostgreSQL ✓")
+        print(
+            "   All features working: Deduplication ✓ NER ✓ Sentiment ✓ Keywords ✓ PostgreSQL ✓"
+        )
     else:
         print("⚠️  FULL PIPELINE TEST COMPLETED WITH WARNINGS")
         print(f"   API checks: {checks_passed}/{checks_total}")
         print(f"   DB checks: {db_checks_passed}/{db_checks_total}")
-    print("="*80 + "\n")
-    
+    print("=" * 80 + "\n")
+
     return checks_passed == checks_total and db_checks_passed == db_checks_total
 
 
@@ -386,10 +398,10 @@ def main():
 
         # Test single analysis
         segment_id = test_analyze_single()
-        
+
         # Wait a bit for database write
         time.sleep(1)
-        
+
         # Query database to verify
         if segment_id:
             query_postgres(segment_id)
@@ -397,10 +409,10 @@ def main():
 
         # Test batch analysis
         batch_ids = test_batch_analysis()
-        
+
         # Wait for batch processing
         time.sleep(2)
-        
+
         # Verify one batch item in database
         if batch_ids:
             query_postgres(batch_ids[0])
@@ -408,16 +420,19 @@ def main():
         # Run comprehensive full pipeline test
         test_full_pipeline()
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("✅ All tests completed!")
-        print("="*80)
+        print("=" * 80)
 
     except requests.exceptions.ConnectionError:
         print("❌ Error: Could not connect to API. Make sure services are running:")
-        print("   docker compose up --build api-gateway sentiment-service ner-service postgres")
+        print(
+            "   docker compose up --build api-gateway sentiment-service ner-service postgres"
+        )
     except Exception as e:
         print(f"❌ Error: {e}")
         import traceback
+
         traceback.print_exc()
 
 

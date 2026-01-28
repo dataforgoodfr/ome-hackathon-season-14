@@ -26,4 +26,5 @@ dependencies = [
     "transformers>=5.0.0rc3",
     "fastapi[standard]>=0.128.0",
     "uvicorn>=0.40.0",
+    "wordcloud>=1.9.6",
 ]

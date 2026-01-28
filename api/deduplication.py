@@ -55,7 +55,10 @@ def find_loop_period(text: str, sample_len: int = 100) -> Tuple[Optional[int], i
 
     # Verify this period is consistent for at least the first few occurrences
     if len(occurrences) >= 3:
-        expected_gaps = [occurrences[i + 1] - occurrences[i] for i in range(min(3, len(occurrences) - 1))]
+        expected_gaps = [
+            occurrences[i + 1] - occurrences[i]
+            for i in range(min(3, len(occurrences) - 1))
+        ]
         if not all(gap == period for gap in expected_gaps[:-1]):
             # Gaps are inconsistent - might not be a true loop
             # Still return the detected period but mark as uncertain
@@ -98,7 +101,7 @@ def remove_text_loops(text: str, sample_len: int = 100, verify: bool = True) -> 
         # Check if the expected content matches the beginning of the original
         min_len = min(len(expected), len(text))
         # Allow for partial match at the end (the text might have a partial loop)
-        if expected[:min_len - period] != text[:min_len - period]:
+        if expected[: min_len - period] != text[: min_len - period]:
             # Verification failed - content doesn't match expected pattern
             # This might indicate a more complex repetition structure
             # Return original to be safe
@@ -143,7 +146,8 @@ def preprocess_dataframe(
 
     df[output_column] = df[text_column].apply(
         lambda x: remove_text_loops(x, sample_len=sample_len, verify=verify)
-        if isinstance(x, str) else x
+        if isinstance(x, str)
+        else x
     )
 
     return df
@@ -194,49 +198,3 @@ def get_deduplication_stats(df: pd.DataFrame, text_column: str = "report_text") 
         stats["compression_ratio"] = 1.0
 
     return stats
-
-
-if __name__ == "__main__":
-    # Example usage and testing
-    import sys
-    from pathlib import Path
-
-    # Add project root to path
-    sys.path.insert(0, str(Path(__file__).parent.parent))
-
-    from main.main import get_agriculture_data
-
-    print("=" * 80)
-    print("TEXT DEDUPLICATION DEMO")
-    print("=" * 80)
-
-    # Load sample data
-    df = get_agriculture_data(split="train")
-
-    # Show before/after for first few samples
-    print("\nBefore/After comparison for first 5 samples:")
-    print("-" * 80)
-
-    for i in range(5):
-        original = df.iloc[i]["report_text"]
-        deduplicated = remove_text_loops(original)
-        period, count = find_loop_period(original)
-
-        print(f"\nSample {i}:")
-        print(f"  Original length: {len(original):,} chars")
-        print(f"  Deduplicated length: {len(deduplicated):,} chars")
-        print(f"  Loop period: {period}")
-        print(f"  Repetitions: {count}")
-        print(f"  Compression ratio: {len(original) / len(deduplicated):.1f}x")
-
-    # Compute overall stats
-    print("\n" + "=" * 80)
-    print("OVERALL STATISTICS")
-    print("=" * 80)
-
-    stats = get_deduplication_stats(df)
-    print(f"\nTotal records: {stats['total_records']:,}")
-    print(f"Records with loops: {stats['records_with_loops']:,}")
-    print(f"Original total chars: {stats['original_total_chars']:,}")
-    print(f"Deduplicated total chars: {stats['deduplicated_total_chars']:,}")
-    print(f"Overall compression ratio: {stats['compression_ratio']:.1f}x")

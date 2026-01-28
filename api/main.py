@@ -75,8 +75,9 @@ app = FastAPI(
 )
 
 # Add CORS middleware for frontend
+from starlette.middleware.cors import CORSMiddleware as StarletteMiddleware
 app.add_middleware(
-    CORSMiddleware,
+    StarletteMiddleware,  # type: ignore[arg-type]
     allow_origins=["*"],  # Configure appropriately for production
     allow_credentials=True,
     allow_methods=["*"],
@@ -261,7 +262,7 @@ async def call_ner_service(text: str) -> dict:
                     "person": result.get("persons", []),
                     "organization": result.get("organizations", []),
                     "location": result.get("locations", []),
-                    "misc": result.get("misc", [])
+                    "misc": result.get("misc", []),
                 }
             else:
                 print(f"NER service returned status {response.status_code}")
@@ -293,7 +294,7 @@ async def call_keywords_service(text: str) -> dict:
                     kw_data = result[0]
                     return {
                         "keywords": kw_data.get("keywords_filtered", []),
-                        "nouns": kw_data.get("nouns_found", [])
+                        "nouns": kw_data.get("nouns_found", []),
                     }
                 return {"keywords": [], "nouns": []}
             else:
@@ -310,7 +311,7 @@ async def analyze_segment(segment: SegmentData):
     """
     Analyze a single segment by querying all available model services
     and storing the enriched results in PostgreSQL
-    
+
     Pipeline:
     1. Deduplication - Remove repetitive text loops
     2. NER - Extract actors (persons, organizations, locations, misc)
@@ -323,12 +324,12 @@ async def analyze_segment(segment: SegmentData):
     try:
         # Step 1: Deduplication - Remove repetitive loops from text
         deduplicated_text = remove_text_loops(segment.report_text)
-        
+
         # Step 2, 3 & 4: Call NER, Sentiment and Keywords services in parallel
         actors, (sentiment, sentiment_confidence), keywords_data = await asyncio.gather(
             call_ner_service(deduplicated_text),
             call_sentiment_service(deduplicated_text),
-            call_keywords_service(deduplicated_text)
+            call_keywords_service(deduplicated_text),
         )
 
         # Step 5: Classify agricultural discourse based on keywords

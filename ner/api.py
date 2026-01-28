@@ -80,7 +80,7 @@ def clean_text(text: str) -> str:
     if not isinstance(text, str):
         return ""
     # Remove extra whitespace and special chars
-    text = re.sub(r'\s+', ' ', text).strip()
+    text = re.sub(r"\s+", " ", text).strip()
     return text
 
 
@@ -112,35 +112,36 @@ async def predict_entities(request: PredictRequest):
     try:
         # Clean text
         text = clean_text(request.text)
-        
+
         # Initialize entity lists
         persons = []
         organizations = []
         locations = []
         misc = []
-        
+
         # Process text in chunks if it's very long (max 5000 chars per chunk)
         chunk_size = 5000
         for i in range(0, len(text), chunk_size):
-            chunk = text[i:i + chunk_size]
-            
+            chunk = text[i : i + chunk_size]
+
             # Ensure we don't cut in the middle of a word
             if i + chunk_size < len(text):
-                last_space = chunk.rfind(' ')
+                last_space = chunk.rfind(" ")
                 if last_space > chunk_size * 0.8:
                     chunk = chunk[:last_space]
-            
+
             # Process chunk with spaCy
             doc = nlp(chunk)
-            
+
             # Extract named entities
             for ent in doc.ents:
                 entity_text = ent.text.strip().lower()
                 # Filter out very short entities, numbers, and common false positives
-                if (len(entity_text) > 2 and 
-                    not entity_text.isdigit() and 
-                    len(entity_text.split()) <= 4):
-                    
+                if (
+                    len(entity_text) > 2
+                    and not entity_text.isdigit()
+                    and len(entity_text.split()) <= 4
+                ):
                     if ent.label_ == "PER":
                         persons.append(entity_text)
                     elif ent.label_ == "ORG":
@@ -149,13 +150,13 @@ async def predict_entities(request: PredictRequest):
                         locations.append(entity_text)
                     elif ent.label_ == "MISC":
                         misc.append(entity_text)
-        
+
         # Return unique entities
         return PredictResponse(
             persons=list(set(persons)),
             organizations=list(set(organizations)),
             locations=list(set(locations)),
-            misc=list(set(misc))
+            misc=list(set(misc)),
         )
 
     except Exception as e:
