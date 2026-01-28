@@ -8,7 +8,6 @@ WORKDIR /app
 # Copy project files first
 COPY pyproject.toml uv.lock ./
 COPY api ./api
-COPY main ./main
 
 # Install dependencies and project
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -21,7 +20,6 @@ WORKDIR /app
 # Copy the environment and source code
 COPY --from=builder /app/.venv /app/.venv
 COPY --from=builder /app/api /app/api
-COPY --from=builder /app/main /app/main
 
 # Expose port
 EXPOSE 8000

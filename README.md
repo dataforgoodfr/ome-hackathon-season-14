@@ -1,204 +1,101 @@
-# OME Hackathon Season 14 - Les puissants gardes forestiers
+# OME Hackathon Season 14
+
+**Text Analysis Microservices for Media Ecology**
 
 Data For Good x L'Observatoire des Médias sur l'Écologie
 
 ## 🚀 Quick Start
 
-### Prerequisites
-
-- Python 3.11+ (Python 3.14 has limited ML library support)
-- Docker & Docker Compose (for inference service)
-- Git
-
-### Automated Setup
-
-Run the setup script to install all dependencies:
-
+Be aware that it takes some time to start up !
 ```bash
-chmod +x setup.sh
+# Start all services
+docker-compose up --build
+
+# Access the API
+open http://localhost:8000
+
+# Access the frontend
+open frontend/index.html
+```
+
+## 📁 Project Structure
+
+```
+├── api/              # API Gateway (orchestrates all services)
+├── sentiment/        # Sentiment analysis microservice
+├── ner/             # Named Entity Recognition microservice
+├── key-words/       # Keywords extraction microservice
+├── frontend/        # Web interface
+├── analysis/        # Data analysis notebooks
+└── docker-compose.yml
+```
+
+## 🏗️ Architecture
+
+**Microservices:**
+- **API Gateway** (port 8000) - Orchestrates all analysis services
+- **Sentiment Service** - Analyzes text sentiment (positive/negative/neutral)
+- **NER Service** - Extracts persons, organizations, and locations
+- **Keywords Service** - Extracts key themes and topics
+- **PostgreSQL** - Stores analysis results
+
+## 🛠️ Development
+
+### Setup
+
+## Easu setup script
+```bash
 ./setup.sh
 ```
 
-This will:
-- Install `uv` (fast Python package manager)
-- Install `ty` (type checker)
-- Install `ruff` (linter & formatter)
-- Create a virtual environment
-- Install all project dependencies
-
-### Manual Setup
-
-If you prefer manual setup:
-
 ```bash
-# Install uv
+# Install uv (fast Python package manager)
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Install ty (optional, for type checking)
-curl -LsSf https://astral.sh/ty/install.sh | sh
-
-# Install ruff (optional, for linting and formatting)
-curl -LsSf https://astral.sh/ruff/install.sh | sh
-
-# Sync project dependencies
+# Install dependencies
 uv sync
 
 # Activate virtual environment
 source .venv/bin/activate
 ```
 
-## 📊 Dataset Exploration
-
-Explore the hackathon dataset:
+### Code Quality
 
 ```bash
-uv run python dataset/explore.py
-```
-
-**Dataset Overview:**
-- 8,349 text samples from French TV channels
-- 4 channels: France 2, TF1, France 3-IDF, M6
-- Categories: agriculture/food, mobility/transport, energy, other
-- Text types: segments and reports
-- Average text length: ~31,874 characters
-
-## 🏗️ Project Structure
-
-```
-.
-├── dataset/
-│   └── explore.py          # Dataset exploration script
-├── inference/
-│   ├── database_connection.py  # PostgreSQL connection
-│   ├── models.py           # Database models
-│   ├── predict.py          # Inference logic
-│   ├── logs.py             # Logging utilities
-│   └── Dockerfile          # Inference service container
-├── train/
-│   ├── train.py            # Model training script
-│   └── Dockerfile          # Training service container
-├── models/                 # Trained models directory
-├── docker-compose.yml      # Multi-service orchestration
-├── pyproject.toml          # Python dependencies
-└── setup.sh                # Automated setup script
-```
-
-## 🐳 Docker Services
-
-Start the inference service with database and Metabase:
-
-```bash
-docker compose up --build inference
-```
-
-Available services:
-- **inference**: Main prediction service
-- **postgres**: PostgreSQL database
-- **metabase**: Data visualization dashboard
-- **train**: Model training service (optional)
-
-Access Metabase at: http://localhost:3000
-
-## 📦 Installed Dependencies
-
-### Core Dependencies
-- **pandas** (3.0.0) - Data manipulation
-- **pyarrow** (23.0.0) - Parquet file support
-- **huggingface-hub** (1.3.3) - Dataset loading
-- **datasets** (4.5.0) - Hugging Face datasets library
-
-### Database
-- **sqlalchemy** (2.0.46) - Database ORM
-- **psycopg2-binary** (2.9.11) - PostgreSQL driver
-
-### Machine Learning
-- **scikit-learn** (1.8.0) - ML utilities and metrics
-- **scipy** (1.17.0) - Scientific computing
-
-### ⚠️ Known Issues
-
-**ML Libraries on Python 3.14:**
-- `setfit`, `transformers`, and `tokenizers` fail to build due to Rust compilation errors
-- **Recommended**: Use Python 3.11 or 3.12 for full ML functionality
-- **Alternative**: Use Docker containers which have compatible Python versions
-
-## 🎯 Hackathon Tasks
-
-### Task 1: Text Classification
-Classify texts into "report" vs "segment" categories with high efficiency and low resource usage.
-
-**Approach:**
-- Use embeddings to analyze semantic structure
-- Replicate LLM results with fewer resources
-- Focus on FOSS tools and frugal solutions
-
-### Task 2: Category Classification
-Classify content into: Agriculture/Food, Mobility/Transport, Energy, or Other.
-
-**Approach:**
-- Start with simple solutions (keyword-based)
-## 🔧 Development
-
-### Linting and Formatting
-
-Lint your code with `ruff`:
-
-```bash
+# Lint
 ruff check .
-```
 
-Auto-format your code:
-
-```bash
+# Format
 ruff format .
-```
 
-### Type Checking
-
-Check for type errors using `ty`:
-### Type Checking
-
-Check for type errors using `ty`:
-
-```bash
+# Type check
 ty check
 ```
 
-### Running Python Scripts
-
-Use `uv run` to execute scripts in the project environment:
+### Run Locally
 
 ```bash
-uv run python <script.py>
+# Start services
+docker-compose up --build
+
+# Test
+
+# Process all the provided data through the API. (Take somes times)
+python process_and_export.py
 ```
 
-### Adding Dependencies
+## 📊 Analysis
 
-Add new packages with uv:
+Jupyter notebook with comprehensive analysis available in `analysis/analysis.ipynb`:
+- Agricultural themes representation
+- Media actors and organizations
+- Sentiment distribution
+- Geographic coverage
 
-```bash
-uv add <package-name>
-```
+## 🤝 Team
 
-## 📝 Evaluation Criteria
-
-1. **Depth of analysis** - Comprehensive solution to the problem
-2. **Technical maturity** - Production-ready, containerized solution
-3. **Frugality** - Efficient use of resources
-4. **FOSS tools** - Prefer open-source over Big Tech models
-
-## 🤝 Contributing
-
-This is a hackathon project for Data For Good x OME Season 14.
-
-**Team:** Les puissants gardes forestiers
+**Les puissants gardes forestiers** - OME Hackathon Season 14
 
 ## 📄 License
 
-See LICENSE file for details.
-
-## 🔗 Resources
-
-- [uv documentation](https://docs.astral.sh/uv/)
-- [ty documentation](https://docs.astral.sh/ty/)
-- [OME Project Details](./README-subject.md)
+See LICENSE file.
