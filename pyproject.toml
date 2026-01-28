@@ -1,30 +1,27 @@
 [project]
 name = "ome-hackathon-season-14"
 version = "0.1.0"
-description = "Add your description here"
+description = "OME Hackathon Season 14 - Text analysis microservices for media ecology"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "datasets>=2.0.0",
-    "huggingface-hub>=1.3.3",
+    # Core API dependencies
+    "fastapi[standard]>=0.128.0",
     "httpx>=0.27.0",
-    "matplotlib>=3.10.8",
-    "pandas>=3.0.0",
-    "protobuf>=6.33.4",
+    "uvicorn>=0.40.0",
+    # Database
     "psycopg2-binary>=2.9.11",
-    "pyarrow>=23.0.0",
-    "pysentimiento>=0.7.3",
-    "rake-nltk>=1.0.6",
-    "scikit-learn>=1.8.0",
-    "seaborn>=0.13.2",
-    "skimpy>=0.0.20",
-    "sentencepiece>=0.2.1",
-    "spacy>=3.7.0",
     "sqlalchemy>=2.0.46",
-    "tiktoken>=0.12.0",
+    # Data processing
+    "pandas>=3.0.0",
+    "pyarrow>=23.0.0",
+    # NLP & ML microservices
+    "rake-nltk>=1.0.6",
+    "spacy>=3.7.0",
     "torch>=2.10.0",
     "transformers>=5.0.0rc3",
-    "fastapi[standard]>=0.128.0",
-    "uvicorn>=0.40.0",
+    # Analysis notebooks (optional)
+    "matplotlib>=3.10.8",
+    "seaborn>=0.13.2",
     "wordcloud>=1.9.6",
 ]
